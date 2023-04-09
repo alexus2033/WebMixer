@@ -40,16 +40,13 @@
 		};
 	}
 
+	// set first available device as default
 	function setDefault(){
 		inputDev = null;
 		outputDev = null;
 		if(inputs.length > 0){
 			inputDev = inputs[0];
 			inputDev.onmidimessage = handleInputMessage;
-			//inputDev.onmidimessage = (msg) => {
-			//	console.log(msg.data);
-			//	handleMIDIMessage;
-			//};
 			printInfo(`${inputDev.state} ${inputDev.type}: ${inputDev.name}`);
 		}
 		if(outputs.length > 0){
@@ -59,8 +56,8 @@
 	}
 
 	function printInfo(value){
-		value += "\n";
 		if(log!=null){
+			value += "\n";
 			log.innerText += value;
 		} else {
 			console.log(value);

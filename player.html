@@ -38,6 +38,7 @@ Messages:
 </pre>
 <script>
   var fileSelector = document.getElementById("selector"),
+  fileList = document.getElementById("fileList"),
   pos = $('div[class="pos"]'),
   info = $('div[class="info"]'),
   player = $('audio[class="player"]'),
@@ -50,16 +51,33 @@ Messages:
 	  runTest();
   }
 
+  // drag & drop files to list
+  fileList.addEventListener("dragenter", drag, false);
+  fileList.addEventListener("dragover", drag, false);
+  fileList.addEventListener("drop", (event) => {
+    drag(event);
+    const dt = event.dataTransfer;
+    addFiles(dt.files);
+  });
+
+  function drag(event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  function addFiles(files){
+    Array.from(files).forEach(item => {
+      var option = document.createElement("option");
+      option.text = item.name;
+      fileList.add(option); 
+    });
+  }
+
 // New File selected
 fileSelector.addEventListener('change', (event) => {
   files = fileSelector.files;
+  addFiles(files);
   var len = files.length;
-  Array.from(files).forEach(item => {
-    var x = document.getElementById("fileList");
-    var option = document.createElement("option");
-    option.text = item.name;
-    x.add(option); 
-  });
   if(len){
     loadTitle(files[0]);
   }
