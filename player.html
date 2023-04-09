@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta name="Keywords" content="webMIDIAPI,Controller,Alphabeat">
+	<title>Alphabeat Player</title>
+	<script src="https://code.jquery.com/jquery-1.11.2.js"></script>
+  <script type="text/javascript" src="js/alphabeatmidiapi.js"></script>
+	<script type="text/javascript" src="js/player.js"></script>
+</HEAD>
+<body>
+<table>
+  <tr>
+    <th>Deck 1</th>
+    <th></th>
+    <th>Deck 2</th>
+  </tr>
+  <tr>
+    <td><div class="info"></div><div class="pos"></div></td>
+    <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple></td>
+    <td><div class="info"></div><div class="pos"></div></td>
+  </tr>
+  <tr>
+    <td><audio controls class="player" preload="metadata"></audio></td>
+    <td><input type="button" value="Open..." onclick="document.getElementById('selector').click();" /></td>
+    <td><audio controls class="player" preload="metadata"></audio></td>
+  </tr>
+  <tr>
+    <td colspan="3">
+      <select id="fileList" Size="10" style="width: 100%;">
+      </select>  
+    </td>
+  </tr>
+</table>
+Messages:
+<pre id="log">
+</pre>
+<script>
+  var fileSelector = document.getElementById("selector"),
+  pos = $('div[class="pos"]'),
+  info = $('div[class="info"]'),
+  player = $('audio[class="player"]'),
+  prevSecs = -1,
+  prevMins = -1,
+  files;
+
+  window.onload = function()
+  {
+	  runTest();
+  }
+
+// New File selected
+fileSelector.addEventListener('change', (event) => {
+  files = fileSelector.files;
+  var len = files.length;
+  Array.from(files).forEach(item => {
+    var x = document.getElementById("fileList");
+    var option = document.createElement("option");
+    option.text = item.name;
+    x.add(option); 
+  });
+  if(len){
+    loadTitle(files[0]);
+  }
+});
+
+player.toArray().forEach(function (item, id) {
+    updatePlayerTime(item, id);
+    startStopPlayer(item, id);
+    playlistEnded(item, id);
+    item.addEventListener("emptied", (event) => {
+      pos[id].innerHTML = "";
+    });
+});
+</script>
+</body>
