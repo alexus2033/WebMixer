@@ -106,7 +106,6 @@
 
 	// handle received messaged
 	function handleInputMessage( event ) {
-		var str=null;
 		if( event.data.length < 3)
 			return;
 
@@ -131,6 +130,7 @@
 			if(event.data[1] == 0x3a && fileList.selectedIndex >=0){ 
 				loadTitle(fileStore[fileList.selectedIndex]);
 			}
+			return;
 		}
 
 		//handle Fader & Encoder
@@ -141,19 +141,28 @@
 			if(event.data[1] == 0x29){
 				player[1].volume = event.data[2]/128;
 			}
-			if(event.data[1] == 0x20){
-				if(event.data[2] == 0x3f){ //Decrement
+			if(event.data[1] == 0x20 || event.data[1] == 0x2a){
+				if(event.data[2] == 0x3f){ // go up
 					fileList.selectedIndex --;
 				}
-				//Increment
+				// go down
 				if(event.data[2] == 0x41 && fileList.selectedIndex+1 != fileList.options.length){
 					fileList.selectedIndex ++;
 				}
 			}
-			return;
+			if(event.data[1] == 0x21 || event.data[1] == 0x2b){
+				if(event.data[2] == 0x3f){ //Decrement
+					changeSpeed((event.data[1] == 0x21 ? 0 : 1),true);
+				}
+				if(event.data[2] == 0x41){ //Increment
+					changeSpeed((event.data[1] == 0x21 ? 0 : 1),false);
+				}
+			}
 		}
+	}
 
-		str ="data.length=" +event.data.length+ ":"+ " 0x" + event.data[0].toString(16) + ":";
+	function logMessage( event ){
+		var str ="data.length=" +event.data.length+ ":"+ " 0x" + event.data[0].toString(16) + ":";
 		if(log!=null) log.innerText += str;
 
 		for(var i=1,k=0; i<event.data.length; i++, k++){

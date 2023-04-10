@@ -46,6 +46,23 @@
 		}
 	}
 
+    // slow down or speed up playback
+    function changeSpeed(id,speedDown){
+        const step = 0.01;
+        var currentRate = player[id].playbackRate; 
+        if(speedDown){ //Decrement
+            currentRate = currentRate - step;
+        } else { //Increment
+            currentRate = currentRate + step;
+        }
+        if(currentRate >= 0.5 && currentRate <= 2){
+            player[id].playbackRate = currentRate;
+        } else {
+            console.log("invalid speed");
+        }
+        pos[id].innerHTML = `Speed: x ${currentRate.pad(2)}`;
+    }
+
     function updatePlayerTime(player, id){
         // Update Time-Displays
         player.addEventListener("timeupdate", (event) => {
