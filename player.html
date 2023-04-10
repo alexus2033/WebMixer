@@ -34,8 +34,7 @@
   </tr>
 </table>
 Messages:
-<pre id="log">
-</pre>
+<pre id="log"></pre>
 <script>
   var fileSelector = document.getElementById("selector"),
   fileList = document.getElementById("fileList"),
@@ -44,12 +43,39 @@ Messages:
   player = $('audio[class="player"]'),
   prevSecs = -1,
   prevMins = -1,
-  files;
+  fileStore = [];
 
   window.onload = function()
   {
-	  runTest();
+	  initMIDI();
   }
+
+  fileList.ondblclick = function(){
+    if(this.selectedIndex >=0){
+      loadTitle(fileStore[this.selectedIndex]);
+    }
+  };
+
+  fileList.addEventListener("keyup", (event) => {
+    if(event.repeat || fileList.selectedIndex < 0)
+      return;
+
+    switch (event.key) {
+      case "Enter":
+        loadTitle(fileStore[fileList.selectedIndex]);
+      break;
+      case " ":
+        var id = loadTitle(fileStore[fileList.selectedIndex]);
+        player[id].play();
+      break;  
+      case "Del":
+      case "Delete":
+        printInfo(`Key "${event.key}" pressed [event: keydown]`);
+      break;
+      default:
+      return;
+    } 
+  },false);
 
   // drag & drop files to list
   fileList.addEventListener("dragenter", drag, false);
@@ -66,6 +92,8 @@ Messages:
   }
 
   function addFiles(files){
+    var count = fileStore.push.apply(fileStore,files);
+    printInfo(`${count} files added`);
     Array.from(files).forEach(item => {
       var option = document.createElement("option");
       option.text = item.name;
@@ -75,21 +103,12 @@ Messages:
 
 // New File selected
 fileSelector.addEventListener('change', (event) => {
-  files = fileSelector.files;
-  addFiles(files);
-  var len = files.length;
-  if(len){
-    loadTitle(files[0]);
+  if(fileSelector.files.length > 0){
+    addFiles(fileSelector.files);
   }
 });
 
-player.toArray().forEach(function (item, id) {
-    updatePlayerTime(item, id);
-    startStopPlayer(item, id);
-    playlistEnded(item, id);
-    item.addEventListener("emptied", (event) => {
-      pos[id].innerHTML = "";
-    });
-});
+createPlayerEvents();
+
 </script>
 </body>

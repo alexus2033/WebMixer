@@ -4,7 +4,7 @@
 	var outputs = [];
 	var outputDev = null;
 
-	function runTest()
+	function initMIDI()
 	{
 		if (!log)
 		log = document.getElementById("log");
@@ -38,6 +38,9 @@
 			assignInputsAndOutputs(midiAccess);
 			setDefault();
 		};
+		if(inputs.length + outputs.length == 0){
+			printInfo("No MDI-Devices found");
+		}
 	}
 
 	// set first available device as default

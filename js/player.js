@@ -4,6 +4,17 @@
     const playLED = 0x01;
     var eom = [false,false];
 
+    function createPlayerEvents(){
+        player.toArray().forEach(function (item, id) {
+            updatePlayerTime(item, id);
+            startStopPlayer(item, id);
+            playlistEnded(item, id);
+            item.addEventListener("emptied", (event) => {
+              pos[id].innerHTML = "";
+            });
+        });
+    }
+
     function playerInactive(n){
 		if(!player[n].currentTime){
 		  return true;
@@ -11,6 +22,7 @@
 		return player[n].paused;
 	}
 
+    // load file into next available player
     function loadTitle(file){
         var url = URL.createObjectURL(file);
         var id = 0;
@@ -20,6 +32,7 @@
         player[id].setAttribute('src', url);
         player[id].load();
         info[id].innerText = file.name;
+        return id;
     }
 
     // start and stop player
