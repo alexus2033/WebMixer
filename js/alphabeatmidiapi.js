@@ -24,7 +24,7 @@
 			}
 		});
 		
-		navigator.requestMIDIAccess( { sysex: true } ).then( access, failure );
+		navigator.requestMIDIAccess().then( access, failure );
 	}
 
 	function access(midiAccess)
@@ -104,12 +104,13 @@
 		}
 	}
 
+	// handle received messaged
 	function handleInputMessage( event ) {
 		var str=null;
 		if( event.data.length < 3)
 			return;
 
-		//handle Buttons
+		//handle Cue & Play buttons
 		if(event.data[0] == 0x80 && event.data[2] == 0x40){
 			if(event.data[1] == 0x32){
 				pausePlay(0);
@@ -125,13 +126,29 @@
 			}
 			return;
 		}
-		//handle Fader
+		//select button
+		if(event.data[0] == 0x90 && event.data[2] == 0x40){
+			if(event.data[1] == 0x3a && fileList.selectedIndex >=0){ 
+				loadTitle(fileStore[fileList.selectedIndex]);
+			}
+		}
+
+		//handle Fader & Encoder
 		if(event.data[0] == 0xb0){
 			if(event.data[1] == 0x1f){
 				player[0].volume = event.data[2]/128;
 			}
 			if(event.data[1] == 0x29){
 				player[1].volume = event.data[2]/128;
+			}
+			if(event.data[1] == 0x20){
+				if(event.data[2] == 0x3f){ //Decrement
+					fileList.selectedIndex --;
+				}
+				//Increment
+				if(event.data[2] == 0x41 && fileList.selectedIndex+1 != fileList.options.length){
+					fileList.selectedIndex ++;
+				}
 			}
 			return;
 		}

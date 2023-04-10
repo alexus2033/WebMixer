@@ -45,10 +45,13 @@ Messages:
   prevMins = -1,
   fileStore = [];
 
-  window.onload = function()
-  {
+  window.onload = function(){
 	  initMIDI();
   }
+
+  window.onbeforeunload = function(){
+    dispose();
+  };
 
   fileList.ondblclick = function(){
     if(this.selectedIndex >=0){

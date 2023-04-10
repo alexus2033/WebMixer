@@ -93,6 +93,15 @@
         });
     }
 
+    function killPLayer()
+	{
+		if(player){
+			player[0].stop();
+			player[1].stop();
+		}
+		sendShortMsg([0x90,msgEOM+id,0x01]);
+	}
+    
     // format number
     Number.prototype.pad = function(size) {
 		var s = String(this);
