@@ -67,7 +67,7 @@
                 eom[id] = true;
             }
             if(mins && outputs.length == 0){
-                pos[id].innerHTML = `${mins}:${secs.pad(2)}.${millis}`;
+                pos[id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
             }
         });
     }
@@ -89,12 +89,6 @@
             if(eom[id]==true){
                 sendShortMsg([0x90,msgEOM+id,0x01]);
                 eom[id] = false;
-            }
-            _next += 1;
-            next(_next);
-            console.log(len, _next);
-            if((len-1)==_next){
-              _next=-1;
             }
         });
     }

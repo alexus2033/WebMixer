@@ -57,22 +57,25 @@ Messages:
   };
 
   fileList.addEventListener("keyup", (event) => {
-    if(event.repeat || fileList.selectedIndex < 0)
+    const selectedIdx = fileList.selectedIndex; 
+    if(event.repeat || selectedIdx < 0)
       return;
 
     switch (event.key) {
       case "Enter":
-        loadTitle(fileStore[fileList.selectedIndex]);
+        loadTitle(fileStore[selectedIdx]);
       break;
-      case " ":
-        var id = loadTitle(fileStore[fileList.selectedIndex]);
+      case " ": //Space-Key
+        var id = loadTitle(fileStore[selectedIdx]);
         player[id].play();
       break;  
       case "Del":
       case "Delete":
-        printInfo(`Key "${event.key}" pressed [event: keydown]`);
+        fileStore.splice(selectedIdx, 1);
+        fileList.remove(selectedIdx);
       break;
       default:
+        // printInfo(`Key "${event.key}" pressed [event: keydown]`);
       return;
     } 
   },false);
