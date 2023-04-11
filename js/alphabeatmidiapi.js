@@ -112,10 +112,10 @@
 		//handle Cue & Play buttons
 		if(event.data[0] == 0x80 && event.data[2] == 0x40){
 			if(event.data[1] == 0x32){
-				pausePlay(0);
+				control[0].togglePlay();
 			}
 			if(event.data[1] == 0x33){
-				pausePlay(1);
+				control[1].togglePlay();
 			}
 			if(event.data[1] == 0x37){
 				player[0].currentTime = 0;
@@ -127,8 +127,8 @@
 		}
 		//select button
 		if(event.data[0] == 0x90 && event.data[2] == 0x40){
-			if(event.data[1] == 0x3a && fileList.selectedIndex >=0){ 
-				loadTitle(fileStore[fileList.selectedIndex]);
+			if(event.data[1] == 0x3a && fileList.selectedIndex >=0){
+				loadSelectedEntry();
 			}
 			return;
 		}

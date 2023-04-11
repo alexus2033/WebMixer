@@ -1,8 +1,7 @@
-
 {
     const msgEOM = 0x3a;
     const playLED = 0x01;
-    var eom = [false,false];
+    var control = [];
 
     function createPlayerEvents(){
         player.toArray().forEach(function (item, id) {
@@ -15,23 +14,13 @@
         });
     }
 
-    function playerInactive(n){
-		if(!player[n].currentTime){
-		  return true;
-		}
-		return player[n].paused;
-	}
-
     // load file into next available player
-    function loadTitle(file){
-        var url = URL.createObjectURL(file);
+    function loadLocalFile(file){
         var id = 0;
-        if(!playerInactive(0)){
+        if(control[0].active){
           id = 1;
         }
-        player[id].setAttribute('src', url);
-        player[id].load();
-        info[id].innerText = file.name;
+        control[id].loadFile(file);
         return id;
     }
 
@@ -79,9 +68,8 @@
                 sendShortMsg([0x94+id, 0x14, mins]);
                 prevMins = mins;
             }
-            if(remain < 21 && remain > 0 && eom[id] == false){
-                sendShortMsg([0x90,msgEOM+id,0x7f]);
-                eom[id] = true;
+            if(remain < 21 && remain > 0 && control[id].EOM == false){
+                control[id].EOM = true;
             }
             if(mins && outputs.length == 0){
                 pos[id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
@@ -103,26 +91,21 @@
     function playlistEnded(player, id){
         player.addEventListener("ended", (event) => {
             sendShortMsg([0x90,playLED+id,0x01]);
-            if(eom[id]==true){
-                sendShortMsg([0x90,msgEOM+id,0x01]);
-                eom[id] = false;
-            }
+            control[id].EOM=false
         });
     }
 
-    function killPLayer()
+    // cleanup
+    function killPlayer()
 	{
 		if(player){
-			player[0].stop();
-			player[1].stop();
+            player.toArray().forEach(function (item, id) {
+                item.stop();
+                sendShortMsg([0x90,msgEOM+id,0x01]);
+                sendShortMsg([0x94+id, 0x16, 0x00]);
+                sendShortMsg([0x94+id, 0x15, 0x00]);
+                sendShortMsg([0x94+id, 0x14, 0x00]);
+            });
 		}
-		sendShortMsg([0x90,msgEOM+id,0x01]);
-	}
-    
-    // format number
-    Number.prototype.pad = function(size) {
-		var s = String(this);
-		while (s.length < (size || 2)) {s = "0" + s;}
-		return s;
 	}
 }

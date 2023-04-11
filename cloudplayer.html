@@ -7,8 +7,11 @@
 	<title>Alphabeat Player</title>
 	<script src="https://code.jquery.com/jquery-1.11.2.js"></script>
   <script type="text/javascript" src="js/alphabeatmidiapi.js"></script>
-  <script type="text/javascript" src="js/wrapper.js"></script>
 	<script type="text/javascript" src="js/player.js"></script>
+  <script type="text/javascript" src="js/sc-player.js"></script>
+  <script type="text/javascript" src="js/wrapper.js"></script>
+  <script type="text/javascript" src="js/helper.js"></script>
+  <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
 </HEAD>
 <body>
 <table>
@@ -18,18 +21,35 @@
     <th>Deck 2</th>
   </tr>
   <tr>
+    <td><div class="deck"></div></td>
+    <td></td>
+    <td><div class="deck"></div></td>
+  </tr>
+  <tr>
     <td><div class="info"></div><div class="pos"></div></td>
     <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple></td>
     <td><div class="info"></div><div class="pos"></div></td>
   </tr>
   <tr>
     <td><audio controls class="player" preload="metadata"></audio></td>
-    <td><input type="button" value="Open..." onclick="document.getElementById('selector').click();" /></td>
+    <td><input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
     <td><audio controls class="player" preload="metadata"></audio></td>
   </tr>
   <tr>
     <td colspan="3">
       <select id="fileList" Size="10" style="width: 100%;">
+        <option value="1276388710">Carbon Birds</option>
+        <option value="629033148">Sebek & Rhea Silvia - Daedalus</option>
+        <option value="322240467">Alpha 9 - Higher Place</option>
+        <option value="1416301537">Alpha 9 - Stars Above Us</option>
+        <option value="1416375997">Alpha 9 - Into the Unknown</option>
+        <option value="890428561">Spencer Brown & Alpha 9 - Afterlife</option>
+        <option value="994476076">Jack Back - Permanence</option>
+        <option value="299955417">Solarstone - Spectrum</option>
+        <option value="901252663">CamelPhat - Witching Hour</option>
+        <option value="186781641">CamelPhat feat. A*M*E - Paradigm</option>
+        <option value="1454054704">Markus Schulz - Progressive & Organic House Mix</option>
+        <option value="140733385">Xilent - Pixel Journey</option>
       </select>  
     </td>
   </tr>
@@ -42,6 +62,7 @@ Messages:
   pos = $('div[class="pos"]'),
   info = $('div[class="info"]'),
   player = $('audio[class="player"]'),
+  deck = $('div[class="deck"]'),
   prevSecs = -1,
   prevMins = -1,
   fileStore = [];
@@ -58,9 +79,19 @@ Messages:
 
   fileList.ondblclick = function(){
     if(this.selectedIndex >=0){
-      loadLocalFile(fileStore[this.selectedIndex]);
+      loadSelectedEntry();
     }
   };
+
+  function loadSelectedEntry(){
+    const selectedIdx = fileList.selectedIndex;
+    var trackID = fileList.options[selectedIdx].value;
+    if(trackID){
+      return loadSCTrackID(trackID);
+    } else {
+      return loadLocalFile(fileStore[selectedIdx]);
+    }
+  }
 
   fileList.addEventListener("keyup", (event) => {
     const selectedIdx = fileList.selectedIndex; 
@@ -69,11 +100,11 @@ Messages:
 
     switch (event.key) {
       case "Enter":
-        loadTitle(fileStore[selectedIdx]);
+        loadSelectedEntry();
       break;
       case " ": //Space-Key
-        var id = loadTitle(fileStore[selectedIdx]);
-        player[id].play();
+        var id = loadSelectedEntry();;
+        control[id].play();
       break;  
       case "Del":
       case "Delete":
@@ -102,7 +133,7 @@ Messages:
 
   function addFiles(files){
     var count = fileStore.push.apply(fileStore,files);
-    printInfo(`${files.length} files added`);
+    printInfo(`${count} files added`);
     Array.from(files).forEach(item => {
       var option = document.createElement("option");
       option.text = item.name;
