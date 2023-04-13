@@ -80,7 +80,24 @@ class Wrapper {
         return this.#playing;
     }
 
+    setVolume(newLevel){
+        if(!this.widget){
+            this.player.volume = newLevel;
+        } else {
+            this.widget.setVolume(newLevel*100);
+        }
+    }
+
+    setPosition(newPos){
+        if(!this.widget){
+            this.player.currentTime = newPos;
+        } else {
+            this.widget.seekTo(newPos*1000);
+        }
+    }
+
     loadSCTrack(trackURL,settings) {
+        this.player.removeAttribute('controls');
         if(!this.widget){
             SCPlayerCreate(this.id,trackURL);
         } else {
@@ -89,7 +106,11 @@ class Wrapper {
     }
 
     loadFile(file) {
-        var url = URL.createObjectURL(file); 
+        if(this.widget){
+            SCPlayerKillEvents(this.id);
+        }
+        var url = URL.createObjectURL(file);
+        this.player.setAttribute('controls',''); 
         this.player.setAttribute('src', url);
         this.player.load();
         this.localFile = file.name;

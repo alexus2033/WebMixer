@@ -6,7 +6,6 @@
         SCPlayerPosition = [0,0];
 
     var settings = {color: "%23ff4400",
-        auto_play: false,
         single_active: false,
         hide_related: true,
         show_comments: false,
@@ -18,7 +17,8 @@
         show_teaser: false
         };
 
-    function SCPlayerCreate(id,trackURL) {        
+    function SCPlayerCreate(id,trackURL,autoplay = false) {
+        settings["auto_play"] = autoplay;       
         var ifrm = document.createElement("iframe");
         ifrm.setAttribute("src", createURL(trackURL,settings));
         ifrm.setAttribute("allow","autoplay");
@@ -43,19 +43,20 @@
     }
     
     // load file into next available player
-    function loadSCTrackID(trackID){
-        var target = `${SCAPI}/tracks/${trackID}`,
+    function loadSCTrackID(trackID,autoplay = false){
+        var target = `${SCAPI}/${trackID}`,
         id = 0;
         if(control[0].playing){
             id = 1;
         }
+        settings["auto_play"] = autoplay;
         control[id].loadSCTrack(target,settings);
     }
 
-    function SCPlayerCreateEvents(id){
+    function SCPlayerCreateEvents(id){    
         var widgetIframe = document.getElementById(`sc-player${id}`),
-            widget = SC.Widget(widgetIframe);
-    
+        widget = SC.Widget(widgetIframe);
+
         widget.bind(SC.Widget.Events.READY, function() {
             widget.getDuration(function(seconds) {
                 SCPlayerDuration[id]=seconds;
@@ -63,12 +64,12 @@
             widget.getCurrentSound(function(currentSound) {
                 if(currentSound.title){
                     control[id].title = currentSound.title;
-                    printInfo(currentSound.genre);
+                    info[id].innerText = currentSound.genre;
                 } else {
                     const meta = currentSound.publisher_metadata; 
                     if(meta){
                         control[id].title = meta.release_title;
-                        printInfo(meta.artist);
+                        info[id].innerText = meta.artist;
                     }
                 }         
                 });
@@ -93,8 +94,19 @@
         });
     }
 
+    function SCPlayerKillEvents(widget){
+        widget.unbind(SC.Widget.Events.READY);
+        widget.unbind(SC.Widget.Events.PLAY_PROGRESS);
+        widget.unbind(SC.Widget.Events.PAUSE);
+        widget.unbind(SC.Widget.Events.PLAY);
+        widget.unbind(SC.Widget.Events.FINISH);
+    }
+
     // Update Time-Displays
     function SCPlayerUpdateTime(id){
+        var widgetIframe = document.getElementById(`sc-player${id}`),
+            widget = SC.Widget(widgetIframe);
+
         var remain = SCPlayerDuration[id] - SCPlayerPosition[id];
         remain=remain/1000;
         var mins = parseInt((remain/60)%60),

@@ -118,10 +118,10 @@
 				control[1].togglePlay();
 			}
 			if(event.data[1] == 0x37){
-				player[0].currentTime = 0;
+				control[0].setPosition(0);
 			}
 			if(event.data[1] == 0x38){
-				player[1].currentTime = 0;
+				control[1].setPosition(0);
 			}
 			return;
 		}
@@ -136,10 +136,10 @@
 		//handle Fader & Encoder
 		if(event.data[0] == 0xb0){
 			if(event.data[1] == 0x1f){
-				player[0].volume = event.data[2]/128;
+				control[0].setVolume(event.data[2]/128);
 			}
 			if(event.data[1] == 0x29){
-				player[1].volume = event.data[2]/128;
+				control[1].setVolume(event.data[2]/128);
 			}
 			if(event.data[1] == 0x20 || event.data[1] == 0x2a){
 				if(event.data[2] == 0x3f){ // go up

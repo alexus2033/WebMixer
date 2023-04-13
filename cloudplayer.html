@@ -21,40 +21,43 @@
     <th>Deck 2</th>
   </tr>
   <tr>
-    <td><div class="deck"></div></td>
+    <td><div class="pos"></div></td>
+    <td>
+      <input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple></td>
+    <td><div class="pos"></div></td>
+  </tr>
+  <tr>
+    <td><div class="SCpayer"></div><audio class="player" controls preload="metadata"></audio></td>
+    <td><input type="button" value="URL..." onclick="inputURL();" />
+        <input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
+    <td><div class="SCpayer"></div><audio class="player" controls preload="metadata"></audio></td>
+  </tr>
+  <tr>
+    <td><div class="info"></div></td>
     <td></td>
-    <td><div class="deck"></div></td>
-  </tr>
-  <tr>
-    <td><div class="info"></div><div class="pos"></div></td>
-    <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple></td>
-    <td><div class="info"></div><div class="pos"></div></td>
-  </tr>
-  <tr>
-    <td><audio controls class="player" preload="metadata"></audio></td>
-    <td><input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
-    <td><audio controls class="player" preload="metadata"></audio></td>
+    <td><div class="info"></div></td>
   </tr>
   <tr>
     <td colspan="3">
-      <select id="fileList" Size="10" style="width: 100%;">
-        <option value="1276388710">Carbon Birds</option>
-        <option value="629033148">Sebek & Rhea Silvia - Daedalus</option>
-        <option value="322240467">Alpha 9 - Higher Place</option>
-        <option value="1416301537">Alpha 9 - Stars Above Us</option>
-        <option value="1416375997">Alpha 9 - Into the Unknown</option>
-        <option value="890428561">Spencer Brown & Alpha 9 - Afterlife</option>
-        <option value="994476076">Jack Back - Permanence</option>
-        <option value="299955417">Solarstone - Spectrum</option>
-        <option value="901252663">CamelPhat - Witching Hour</option>
-        <option value="186781641">CamelPhat feat. A*M*E - Paradigm</option>
-        <option value="1454054704">Markus Schulz - Progressive & Organic House Mix</option>
-        <option value="140733385">Xilent - Pixel Journey</option>
+      <select id="fileList" Size="20" style="width: 100%;">
+        <option value="tracks/1276388710">Carbon Birds</option>
+        <option value="tracks/629033148">Sebek & Rhea Silvia - Daedalus</option>
+        <option value="tracks/322240467">Alpha 9 - Higher Place</option>
+        <option value="tracks/1416301537">Alpha 9 - Stars Above Us</option>
+        <option value="tracks/1416375997">Alpha 9 - Into the Unknown</option>
+        <option value="tracks/35039423">Above & Beyond feat Richard Bedford - Every Little Beat</option>
+        <option value="tracks/1164642778">Above & Beyond - Filmic (CRi Remix)</option>
+        <option value="tracks/890428561">Spencer Brown & Alpha 9 - Afterlife</option>
+        <option value="tracks/994476076">Jack Back - Permanence</option>
+        <option value="tracks/299955417">Solarstone - Spectrum</option>
+        <option value="tracks/901252663">CamelPhat - Witching Hour</option>
+        <option value="tracks/186781641">CamelPhat feat. A*M*E - Paradigm</option>
+        <option value="tracks/1454054704">Markus Schulz - Progressive & Organic House Mix</option>
+        <option value="tracks/140733385">Xilent - Pixel Journey</option>
       </select>  
     </td>
   </tr>
 </table>
-Messages:
 <pre id="log"></pre>
 <script>
   var fileSelector = document.getElementById("selector"),
@@ -62,7 +65,7 @@ Messages:
   pos = $('div[class="pos"]'),
   info = $('div[class="info"]'),
   player = $('audio[class="player"]'),
-  deck = $('div[class="deck"]'),
+  deck = $('div[class="SCpayer"]'),
   prevSecs = -1,
   prevMins = -1,
   fileStore = [];
@@ -73,23 +76,20 @@ Messages:
     control[1] = new Wrapper(1);
   }
 
-  window.onbeforeunload = function(){
-    killPlayer();
-  };
+  fileList.ondblclick = loadSelectedEntry;
+  window.onbeforeunload = killPlayer;
 
-  fileList.ondblclick = function(){
-    if(this.selectedIndex >=0){
-      loadSelectedEntry();
-    }
-  };
-
-  function loadSelectedEntry(){
+  function loadSelectedEntry(autoplay = false){
     const selectedIdx = fileList.selectedIndex;
-    var trackID = fileList.options[selectedIdx].value;
-    if(trackID){
-      return loadSCTrackID(trackID);
+    if(selectedIdx < 0) return;
+    var audioElement = fileList.options[selectedIdx].value;
+    console.log(audioElement);
+    if(audioElement.startsWith('file')){
+      var x = audioElement.substring(5);
+      console.log(x-1);
+      return loadLocalFile(fileStore[x-1],autoplay);
     } else {
-      return loadLocalFile(fileStore[selectedIdx]);
+      return loadSCTrackID(audioElement,autoplay);
     }
   }
 
@@ -100,11 +100,10 @@ Messages:
 
     switch (event.key) {
       case "Enter":
-        loadSelectedEntry();
+        loadSelectedEntry(false);
       break;
       case " ": //Space-Key
-        var id = loadSelectedEntry();;
-        control[id].play();
+        var id = loadSelectedEntry(true);
       break;  
       case "Del":
       case "Delete":
@@ -132,12 +131,13 @@ Messages:
   }
 
   function addFiles(files){
-    var count = fileStore.push.apply(fileStore,files);
-    printInfo(`${count} files added`);
     Array.from(files).forEach(item => {
+      var x = fileStore.push(item);
       var option = document.createElement("option");
       option.text = item.name;
-      fileList.add(option); 
+      option.value = 'file/' + x;
+      fileList.add(option);
+      console.log(option.value);
     });
   }
 
