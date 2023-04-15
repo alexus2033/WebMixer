@@ -58,10 +58,21 @@
         widget = SC.Widget(widgetIframe);
 
         widget.bind(SC.Widget.Events.READY, function() {
-            widget.getDuration(function(seconds) {
-                SCPlayerDuration[id]=seconds;
-            });  
+        console.log(`ready player ${id}`);
+        widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(x){
+        var pos = x.currentPosition;
+        if(SCPlayerPosition[id] != pos){
+            SCPlayerPosition[id]=pos;
+            SCPlayerUpdateTime(id);
+        }
+        });
+        widget.bind(SC.Widget.Events.PAUSE, function() {
+            control[id].playing = false;
+        });    
+        widget.bind(SC.Widget.Events.PLAY, function() {
+            control[id].playing = true;
             widget.getCurrentSound(function(currentSound) {
+                SCPlayerDuration[id] = currentSound.duration;
                 if(currentSound.title){
                     control[id].title = currentSound.title;
                     info[id].innerText = currentSound.genre;
@@ -72,26 +83,16 @@
                         info[id].innerText = meta.artist;
                     }
                 }         
-                });
-
-          widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(x){
-            var pos = x.currentPosition;
-            if(SCPlayerPosition[id] != pos){
-                SCPlayerPosition[id]=pos;
-                SCPlayerUpdateTime(id);
-            }
-          });
-          widget.bind(SC.Widget.Events.PAUSE, function() {
-            control[id].playing = false;
-          });    
-          widget.bind(SC.Widget.Events.PLAY, function() {
-            control[id].playing = true;         
-          });
-          widget.bind(SC.Widget.Events.FINISH, function() {
-            control[id].active = false;
-            console.log("Finito!");
-          });
+            });       
+            widget.getCurrentSoundIndex(function(index) {
+                console.log(index);
+            });
         });
+        widget.bind(SC.Widget.Events.FINISH, function() {
+        control[id].active = false;
+        console.log("Finito!");
+        });
+    });
     }
 
     function SCPlayerKillEvents(widget){

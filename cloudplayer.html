@@ -6,8 +6,8 @@
 	<meta name="Keywords" content="webMIDIAPI,Controller,Alphabeat">
 	<title>Alphabeat Player</title>
   <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel = "stylesheet">
-<script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
-<script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
   <script type= "text/javascript" src="js/alphabeatmidiapi.js"></script>
 	<script type= "text/javascript" src="js/player.js"></script>
   <script type= "text/javascript" src="js/sc-player.js"></script>
@@ -151,6 +151,9 @@
 
   function addURL(title,newUrl){
     var pos = newUrl.indexOf("tracks");
+    if(pos < 1){
+      pos = newUrl.indexOf("users");
+    }
     if(pos < 1) return;
     newUrl = newUrl.substring(pos);
     if(title === ""){
