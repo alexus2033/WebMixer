@@ -3,8 +3,9 @@
     const playLED = 0x01;
     var control = [];
 
-    function createPlayerEvents(){
+    function initPlayers(){
         player.toArray().forEach(function (item, id) {
+            control[id] = new Wrapper(id);
             updatePlayerTime(item, id);
             startStopPlayer(item, id);
             playlistEnded(item, id);
