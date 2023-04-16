@@ -1,28 +1,50 @@
-// Cookies
-function createCookie(name, value, days) {
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        var expires = "; expires=" + date.toGMTString();
+function readTitle(songURL){
+    if (typeof(Storage) !== "undefined") {
+        return JSON.parse(localStorage.getItem(songURL));    
     }
-    else var expires = "";               
-
-    document.cookie = name + "=" + value + expires + "; path=/";
 }
 
-function readCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+function writeTitle(songURL,title,artist,cover){
+    if (typeof(Storage) !== "undefined") {
+        const data = [title,artist,cover];
+        localStorage.setItem(songURL, JSON.stringify(data));    
     }
-    return null;
 }
 
-function eraseCookie(name) {
-    createCookie(name, "", -1);
+function readTitles(readCallback){
+    if (typeof(Storage) !== "undefined") {
+
+        for (var key in localStorage){
+            if(key.startsWith("tracks/")){
+                const data = JSON.parse(localStorage.getItem(key));
+                if(data[1]){
+                    readCallback(`${data[1]} - ${data[0]}`,key); //title + artist, URL
+                } else {
+                    readCallback(data[0],key); //title, URL
+                }
+            }
+        }
+    } 
+}
+
+function addURL(title,newUrl){
+    newUrl = SCextractID(newUrl);
+    if(!newUrl) return;
+    if(title === ""){
+      title = newUrl;
+    }
+    writeTitle(newUrl,title);
+    addListEntry(title,newUrl);
+}
+
+function SCextractID(bigURL){
+    bigURL = bigURL.trim().toLowerCase();
+    var pos = bigURL.indexOf("tracks/");
+    if(pos < 0){
+      pos = bigURL.indexOf("users/");
+    }
+    if(pos < 0) return null;
+    return bigURL.substring(pos);
 }
 
 // format number

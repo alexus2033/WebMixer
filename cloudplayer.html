@@ -41,21 +41,9 @@
   </tr>
   <tr>
     <td colspan="3">
-      <select id="fileList" Size="20" style="width: 100%;">
-        <option value="tracks/1276388710">Carbon Birds</option>
+      <select id="fileList" Size="20" style="width: 100%;" autofocus>
+        <option value="tracks/1276388710">Rhea Silvia - Carbon Birds</option>
         <option value="tracks/629033148">Sebek & Rhea Silvia - Daedalus</option>
-        <option value="tracks/322240467">Alpha 9 - Higher Place</option>
-        <option value="tracks/1416301537">Alpha 9 - Stars Above Us</option>
-        <option value="tracks/1416375997">Alpha 9 - Into the Unknown</option>
-        <option value="tracks/35039423">Above & Beyond feat Richard Bedford - Every Little Beat</option>
-        <option value="tracks/1164642778">Above & Beyond - Filmic (CRi Remix)</option>
-        <option value="tracks/890428561">Spencer Brown & Alpha 9 - Afterlife</option>
-        <option value="tracks/994476076">Jack Back - Permanence</option>
-        <option value="tracks/299955417">Solarstone - Spectrum</option>
-        <option value="tracks/901252663">CamelPhat - Witching Hour</option>
-        <option value="tracks/186781641">CamelPhat feat. A*M*E - Paradigm</option>
-        <option value="tracks/1454054704">Markus Schulz - Progressive & Organic House Mix</option>
-        <option value="tracks/140733385">Xilent - Pixel Journey</option>
       </select>  
     </td>
   </tr>
@@ -81,6 +69,7 @@
   window.onload = function(){
 	  initMIDI();
     initPlayers();
+    readTitles(addListEntry);
   }
 
   fileList.ondblclick = loadSelectedEntry;
@@ -90,10 +79,8 @@
     const selectedIdx = fileList.selectedIndex;
     if(selectedIdx < 0) return;
     var audioElement = fileList.options[selectedIdx].value;
-    console.log(autoplay);
     if(audioElement.startsWith('file')){
       var x = audioElement.substring(5);
-      console.log(x-1);
       loadLocalFile(fileStore[x-1],autoplay);
     } else {
       loadSCTrackID(audioElement,autoplay);
@@ -149,31 +136,17 @@
     event.preventDefault();
   }
 
-  function addURL(title,newUrl){
-    var pos = newUrl.indexOf("tracks");
-    if(pos < 1){
-      pos = newUrl.indexOf("users");
-    }
-    if(pos < 1) return;
-    newUrl = newUrl.substring(pos);
-    if(title === ""){
-      title = newUrl;
-    }
+  function addListEntry(title,url){
     var option = document.createElement("option");
-    option.text =  title;
-    option.value = newUrl;
+    option.text = title;
+    option.value = url;
     fileList.add(option);
-    console.log(option.value);
   }
 
   function addFiles(files){
     Array.from(files).forEach(item => {
       var x = fileStore.push(item);
-      var option = document.createElement("option");
-      option.text = item.name;
-      option.value = 'file/' + x;
-      fileList.add(option);
-      console.log(option.value);
+      addListEntry(item.name,'file/' + x);
     });
   }
 

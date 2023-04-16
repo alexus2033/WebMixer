@@ -59,6 +59,25 @@
         });    
     }
     
+    function SCgetCurrentTitle(id,currentSound){
+        var SCurl = SCextractID(currentSound.uri),
+            title = currentSound.title,
+            artwork = currentSound.artwork_url,
+            artist = "";
+
+        const meta = currentSound.publisher_metadata;
+        if(meta.release_title){
+            title = meta.release_title;
+        }
+        if(meta){
+            artist = meta.artist;       
+        }
+        if(SCurl){
+            writeTitle(SCurl,title,artist,artwork);
+        }
+        info[id].innerText = currentSound.genre;
+    }
+
     function SCPlayerCreateEvents(id){    
         var widgetIframe = document.getElementById(`sc-player${id}`),
         widget = SC.Widget(widgetIframe);
@@ -79,16 +98,7 @@
             control[id].playing = true;
             widget.getCurrentSound(function(currentSound) {
                 SCPlayerDuration[id] = currentSound.duration;
-                if(currentSound.title){
-                    control[id].title = currentSound.title;
-                    info[id].innerText = currentSound.genre;
-                } else {
-                    const meta = currentSound.publisher_metadata; 
-                    if(meta){
-                        control[id].title = meta.release_title;
-                        info[id].innerText = meta.artist;
-                    }
-                }         
+                SCgetCurrentTitle(id,currentSound);         
             });       
             widget.getCurrentSoundIndex(function(index) {
                 console.log(index);
