@@ -103,10 +103,12 @@ class Wrapper {
         } else {
             this.widget.load(trackURL,settings);
         }
+        SCgetPlaylist(this.widget);
     }
 
     loadFile(file) {
         if(this.widget){
+            this.widget = null;
             SCPlayerKillEvents(this.id);
         }
         var url = URL.createObjectURL(file);
@@ -117,9 +119,21 @@ class Wrapper {
         info[this.id].innerText = file.name;
     }
 
+    play() {
+        if(this.widget){
+            this.widget.play();
+        } else {
+            this.player.play();
+        }
+    }
+
     togglePlay() {
         if(this.widget){
             this.widget.toggle();
+        } else if (!this.active) {
+            this.player.play();
+        } else {
+            this.player.pause();
         }
     }
 }

@@ -16,25 +16,16 @@
     }
 
     // load file into next available player
-    function loadLocalFile(file){
+    function loadLocalFile(file,autoplay = false){
         var id = 0;
-        if(control[0].active){
+        if(control[0].playing){
           id = 1;
         }
         control[id].loadFile(file);
-        return id;
+        if(autoplay){
+            control[id].play();
+        }
     }
-
-    // start and stop player
-	function pausePlay(id){
-		if(playerInactive(id)){
-			player[id].play();
-			sendShortMsg([0x90,playLED+id,0x7f]);
-		} else {
-			player[id].pause();
-			sendShortMsg([0x90,playLED+id,0x01]);
-		}
-	}
 
     // slow down or speed up playback
     function changeSpeed(id,speedDown){
@@ -81,18 +72,17 @@
     function startStopPlayer(player, id){
         // Player started
         player.addEventListener("play", (event) => {
-        sendShortMsg([0x90,0x01+id,0x7f]);
+            control[id].playing = true;
         })
         // Player stopped
         player.addEventListener("pause", (event) => {
-        sendShortMsg([0x90,0x01+id,0x01]);
+            control[id].playing = false;
         })
     }
 
     function playlistEnded(player, id){
         player.addEventListener("ended", (event) => {
-            sendShortMsg([0x90,playLED+id,0x01]);
-            control[id].EOM=false
+            control[id].active = false;
         });
     }
 

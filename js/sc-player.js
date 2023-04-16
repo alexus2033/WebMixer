@@ -53,6 +53,12 @@
         control[id].loadSCTrack(target,settings);
     }
 
+    function SCgetPlaylist(widget){
+        widget.getSounds(function(plist) {
+            console.log(plist);
+        });    
+    }
+    
     function SCPlayerCreateEvents(id){    
         var widgetIframe = document.getElementById(`sc-player${id}`),
         widget = SC.Widget(widgetIframe);
@@ -95,12 +101,14 @@
     });
     }
 
-    function SCPlayerKillEvents(widget){
-        widget.unbind(SC.Widget.Events.READY);
-        widget.unbind(SC.Widget.Events.PLAY_PROGRESS);
-        widget.unbind(SC.Widget.Events.PAUSE);
-        widget.unbind(SC.Widget.Events.PLAY);
-        widget.unbind(SC.Widget.Events.FINISH);
+    function SCPlayerKillEvents(id){
+        var widgetIframe = document.getElementById(`sc-player${id}`),
+            widget = SC.Widget(widgetIframe);
+        if(widget){
+            widget.unbind();
+        }
+        widgetIframe.parentElement.innerHTML = "";
+        //deck[id].innerHTML = "";
     }
 
     // Update Time-Displays
