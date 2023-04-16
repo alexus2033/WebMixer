@@ -11,20 +11,59 @@ function writeTitle(songURL,title,artist,cover){
     }
 }
 
-function readTitles(readCallback){
-    if (typeof(Storage) !== "undefined") {
-
-        for (var key in localStorage){
-            if(key.startsWith("tracks/")){
-                const data = JSON.parse(localStorage.getItem(key));
-                if(data[1]){
-                    readCallback(`${data[1]} - ${data[0]}`,key); //title + artist, URL
+function importList(file){
+    var reader = new FileReader();
+    reader.onload = function (progressEvent) {
+        var lines = this.result.split('\n');
+        lines.forEach(line => {
+            const data = line.split(';'),
+                exist = localStorage.getItem(data[0]);
+            if(!exist){
+                writeTitle(data[0],data[1],data[2],data[3]);
+                if(data[2] && data[2]!="null"){
+                    addListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
-                    readCallback(data[0],key); //title, URL
+                    addListEntry(data[1],data[0])
                 }
             }
+        });
+    };
+    reader.readAsText(file);
+}
+
+function exportList(){
+    const link = document.createElement("a");
+    var content = "";
+    for (var key in localStorage){
+        if(key.startsWith("tracks/")){
+            content += `${key};`
+            const data = JSON.parse(localStorage.getItem(key));
+            data.forEach(item => {
+                content += `${item};`
+            });
+            content += "\n";
         }
-    } 
+    }
+    const file = new Blob([content], { type: 'text/csv' });
+    link.href = URL.createObjectURL(file);
+    link.download = "export.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+function readTitles(readCallback){
+    if (typeof(Storage) == "undefined") return;
+
+    for (var key in localStorage){
+        if(key.startsWith("tracks/")){
+            const data = JSON.parse(localStorage.getItem(key));
+            if(data[1]){
+                readCallback(`${data[1]} - ${data[0]}`,key); //title + artist, URL
+            } else {
+                readCallback(data[0],key); //title, URL
+            }
+        }
+    }
 }
 
 function addURL(title,newUrl){

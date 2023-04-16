@@ -25,7 +25,7 @@
   <tr>
     <td><div class="pos"></div></td>
     <td>
-      <input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple></td>
+      <input type="file" id="selector" accept=".mp3,.wav,.ogg,.csv" style="display: none;" multiple></td>
     <td><div class="pos"></div></td>
   </tr>
   <tr>
@@ -48,6 +48,7 @@
     </td>
   </tr>
 </table>
+<input type="button" onclick ="exportList();" value="Export" />
 <pre id="log"></pre>
 <div id = "openDiag" title = "Soundcloud">
   <label for="trackTitle">Title:</label>
@@ -145,8 +146,12 @@
 
   function addFiles(files){
     Array.from(files).forEach(item => {
-      var x = fileStore.push(item);
-      addListEntry(item.name,'file/' + x);
+      if(item.name.endsWith(".csv")){
+        importList(item);
+      } else {
+        var x = fileStore.push(item);
+        addListEntry(item.name,'file/' + x);
+      }
     });
   }
 
