@@ -114,7 +114,13 @@
       break;  
       case "Del":
       case "Delete":
-        fileStore.splice(selectedIdx, 1);
+        var audioElement = fileList.options[selectedIdx].value;
+        if(audioElement.startsWith('file')){
+          var x = audioElement.substring(5);
+          fileStore.splice(x-1, 1);
+        } else {
+          killTitle(audioElement);
+        }
         fileList.remove(selectedIdx);
       break;
       default:

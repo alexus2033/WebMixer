@@ -53,9 +53,14 @@
         control[id].loadSCTrack(target,settings);
     }
 
-    function SCgetPlaylist(widget){
+    function SCgetPlaylist(widget,id){
         widget.getSounds(function(plist) {
-            console.log(plist);
+            if(plist.length > 0){
+                widget.getCurrentSoundIndex(function(index) {
+                    info[id].innerText += ` ${index+1}/${plist.length}`;
+                });
+                console.log(plist);
+            }
         });    
     }
     
@@ -99,14 +104,14 @@
             widget.getCurrentSound(function(currentSound) {
                 SCPlayerDuration[id] = currentSound.duration;
                 SCgetCurrentTitle(id,currentSound);         
-            });       
-            widget.getCurrentSoundIndex(function(index) {
-                console.log(index);
             });
+            if(control[id].url.startsWith("users/")){
+                SCgetPlaylist(widget,id);
+            }       
         });
         widget.bind(SC.Widget.Events.FINISH, function() {
-        control[id].active = false;
-        console.log("Finito!");
+            console.log("Finito!");
+            control[id].active = false;
         });
     });
     }

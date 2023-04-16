@@ -51,6 +51,9 @@ class Wrapper {
         this.#eom = newState;
         if(newState == true){
             sendShortMsg([0x90,msgEOM+this.id,0x7f]);
+            if(this.widget && this.url.startsWith("users/")){
+                SCgetPlaylist(this.widget,this.id); //reload playlist
+            }
         } else {
             console.log("set EOM off");
             sendShortMsg([0x90,msgEOM+this.id,0x01]);
@@ -97,13 +100,13 @@ class Wrapper {
     }
 
     loadSCTrack(trackURL,settings) {
+        this.url = trackURL;
         this.player.removeAttribute('controls');
         if(!this.widget){
             SCPlayerCreate(this.id,trackURL);
         } else {
             this.widget.load(trackURL,settings);
         }
-        SCgetPlaylist(this.widget);
     }
 
     loadFile(file) {
@@ -111,11 +114,11 @@ class Wrapper {
             this.widget = null;
             SCPlayerKillEvents(this.id);
         }
-        var url = URL.createObjectURL(file);
+        this.url = file.name;
+        const src = URL.createObjectURL(file);
         this.player.setAttribute('controls',''); 
-        this.player.setAttribute('src', url);
+        this.player.setAttribute('src', src);
         this.player.load();
-        this.localFile = file.name;
         info[this.id].innerText = file.name;
     }
 

@@ -4,8 +4,14 @@ function readTitle(songURL){
     }
 }
 
+function killTitle(songURL){
+    if (typeof(Storage) !== "undefined" && songURL) {
+        localStorage.removeItem(songURL);    
+    }
+}
+
 function writeTitle(songURL,title,artist,cover){
-    if (typeof(Storage) !== "undefined") {
+    if (typeof(Storage) !== "undefined" && songURL) {
         const data = [title,artist,cover];
         localStorage.setItem(songURL, JSON.stringify(data));    
     }
@@ -18,9 +24,9 @@ function importList(file){
         lines.forEach(line => {
             const data = line.split(';'),
                 exist = localStorage.getItem(data[0]);
-            if(!exist){
+            if(!exist && data.length > 1){
                 writeTitle(data[0],data[1],data[2],data[3]);
-                if(data[2] && data[2]!="null"){
+                if(data[2] && data[2]!=="null"){
                     addListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
                     addListEntry(data[1],data[0])
@@ -46,7 +52,7 @@ function exportList(){
     }
     const file = new Blob([content], { type: 'text/csv' });
     link.href = URL.createObjectURL(file);
-    link.download = "export.csv";
+    link.download = "alphabeat-export.csv";
     link.click();
     URL.revokeObjectURL(link.href);
 }
