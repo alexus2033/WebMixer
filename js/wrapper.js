@@ -68,6 +68,9 @@ class Wrapper {
      * @param {boolean} newState
      */
     set playing(newState) {
+        if(newState == false){
+            this.EOM = false; //stop blinker
+        }
         if(newState == this.#playing)
             return; //nothing changed
 

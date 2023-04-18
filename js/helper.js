@@ -40,16 +40,16 @@ function importList(file){
 function exportList(){
     const link = document.createElement("a");
     var content = "";
-    for (var key in localStorage){
-        if(key.startsWith("tracks/")){
-            content += `${key};`
-            const data = JSON.parse(localStorage.getItem(key));
-            data.forEach(item => {
-                content += `${item};`
-            });
-            content += "\n";
-        }
-    }
+    Object.keys(localStorage).filter(function(key){
+        return key.startsWith("tracks/");
+    }).forEach(key => {
+        content += `${key};`
+        const data = JSON.parse(localStorage.getItem(key));
+        data.forEach(item => {
+            content += `${item};`
+        });
+        content += "\n";
+    });
     const file = new Blob([content], { type: 'text/csv' });
     link.href = URL.createObjectURL(file);
     link.download = "alphabeat-export.csv";
@@ -60,16 +60,16 @@ function exportList(){
 function readTitles(readCallback){
     if (typeof(Storage) == "undefined") return;
 
-    for (var key in localStorage){
-        if(key.startsWith("tracks/")){
-            const data = JSON.parse(localStorage.getItem(key));
-            if(data[1]){
-                readCallback(`${data[1]} - ${data[0]}`,key); //title + artist, URL
-            } else {
-                readCallback(data[0],key); //title, URL
-            }
-        }
-    }
+    Object.keys(localStorage).filter(function(key){
+        return key.startsWith("tracks/");
+    }).forEach(item => {
+        const data = JSON.parse(localStorage.getItem(item));
+        if(data[1]){
+            readCallback(`${data[1]} - ${data[0]}`,item); //title + artist, URL
+        } else {
+            readCallback(data[0],item); //title, URL
+        } 
+    });
 }
 
 function addURL(title,newUrl){
