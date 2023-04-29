@@ -17,7 +17,39 @@ function writeTitle(songURL,title,artist,cover){
     }
 }
 
-function importList(file){
+function displayCover(audioURL){
+    img = document.getElementById("cover");
+    if(audioURL.startsWith('file')){
+      var x = audioURL.substring(5);
+      window.jsmediatags.read(fileStore[x-1], {
+          onSuccess: function(tag) {
+            const { data, format } = tag.tags.picture;
+            let base64String = "";
+            for (let i = 0; i < data.length; i++) {
+              base64String += String.fromCharCode(data[i]);
+            }
+            img.src = `data:${format};base64,${window.btoa(base64String)}`;
+          },
+          onError: function(error) {
+            img.src = "";
+          }
+        });
+    } else { //not startsWith('file')
+      var songInfo = readTitle(audioURL),
+          cover = "";
+      if(songInfo.length>2){
+        cover = songInfo[2];
+        if(cover.endsWith("large.jpg")){
+            cover = cover.replace("large.jpg","t500x500.jpg");
+        } else if (cover.endsWith("large.png")){
+            cover = cover.replace("large.png","t500x500.png");
+        }
+      }
+      img.src = cover;
+    }
+}
+
+function importCSV(file){
     var reader = new FileReader();
     reader.onload = function (progressEvent) {
         var lines = this.result.split('\n');
@@ -92,7 +124,7 @@ function SCextractID(bigURL){
     return bigURL.substring(pos);
 }
 
-// format number
+// format number with leading zero
 Number.prototype.pad = function(size) {
     var s = String(this);
     while (s.length < (size || 2)) {s = "0" + s;}

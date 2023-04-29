@@ -14,6 +14,7 @@
   <script type= "text/javascript" src="js/wrapper.js"></script>
   <script type= "text/javascript" src="js/helper.js"></script>
   <script type= "text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
+  <script type= "text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 </HEAD>
 <body>
 <table>
@@ -25,7 +26,7 @@
   <tr>
     <td><div class="pos"></div></td>
     <td>
-      <input type="file" id="selector" accept=".mp3,.wav,.ogg,.csv" style="display: none;" multiple></td>
+      <input type="file" id="selector" accept=".mp3,.wav,.ogg,.flac,.csv" style="display: none;" multiple></td>
     <td><div class="pos"></div></td>
   </tr>
   <tr>
@@ -40,12 +41,13 @@
     <td><div class="info"></div></td>
   </tr>
   <tr>
-    <td colspan="3">
+    <td colspan="2">
       <select id="fileList" Size="20" style="width: 100%;" autofocus>
         <option value="tracks/1276388710">Rhea Silvia - Carbon Birds</option>
         <option value="tracks/629033148">Sebek & Rhea Silvia - Daedalus</option>
       </select>  
     </td>
+    <td><img id="cover" style="max-width:250px;"></img></td>
   </tr>
 </table>
 <input type="button" onclick ="exportList();" value="Export" />
@@ -87,6 +89,14 @@
       loadSCTrackID(audioElement,autoplay);
     }
   }
+
+  function listChanged(){
+		selectedIdx = fileList.selectedIndex;
+		if(selectedIdx > -1){
+			  displayCover(fileList.options[selectedIdx].value);
+		}
+	}
+
   $("#urlOpen").click(function() {
       ($("#openDiag").dialog("isOpen") == false) ? $(
         "#openDiag").dialog("open") : $("#openDiag").dialog("close") ;
@@ -99,7 +109,12 @@
         var tt = document.getElementById("trackTitle");
         addURL(tt.value, $("#SCurl").val());
         $(this).dialog("close");}
-  }});
+    },
+    close: function() {
+        document.getElementById("trackTitle").value = "";
+    }});
+
+  fileList.addEventListener("change", listChanged); //not triggered via MIDI
   fileList.addEventListener("keyup", (event) => {
     const selectedIdx = fileList.selectedIndex; 
     if(event.repeat || selectedIdx < 0)
@@ -153,7 +168,7 @@
   function addFiles(files){
     Array.from(files).forEach(item => {
       if(item.name.endsWith(".csv")){
-        importList(item);
+        importCSV(item);
       } else {
         var x = fileStore.push(item);
         addListEntry(item.name,'file/' + x);

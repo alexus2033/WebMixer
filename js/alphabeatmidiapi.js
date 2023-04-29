@@ -144,10 +144,12 @@
 			if(event.data[1] == 0x20 || event.data[1] == 0x2a){
 				if(event.data[2] == 0x3f){ // go up
 					fileList.selectedIndex --;
+					listChanged();
 				}
 				// go down
 				if(event.data[2] == 0x41 && fileList.selectedIndex+1 != fileList.options.length){
 					fileList.selectedIndex ++;
+					listChanged();
 				}
 			}
 			if(event.data[1] == 0x21 || event.data[1] == 0x2b){
