@@ -57,7 +57,7 @@
         widget.getSounds(function(plist) {
             if(plist.length > 0){
                 widget.getCurrentSoundIndex(function(index) {
-                    info[id].innerText += ` ${index+1}/${plist.length}`;
+                    playerInfo[id].innerText += ` ${index+1}/${plist.length}`;
                 });
                 console.log(plist);
             }
@@ -80,7 +80,7 @@
         if(SCurl){
             writeTitle(SCurl,title,artist,artwork);
         }
-        info[id].innerText = currentSound.genre;
+        playerInfo[id].innerText = currentSound.genre;
     }
 
     function SCPlayerCreateEvents(id){    

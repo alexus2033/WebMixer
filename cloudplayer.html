@@ -36,18 +36,20 @@
     <td><div class="SCpayer"></div><audio class="player" controls preload="metadata"></audio></td>
   </tr>
   <tr>
-    <td><div class="info"></div></td>
+    <td><div class="Pinfo"></div></td>
     <td></td>
-    <td><div class="info"></div></td>
+    <td><div class="Pinfo"></div></td>
   </tr>
+</table>
+<table>
   <tr>
-    <td colspan="2">
-      <select id="fileList" Size="20" style="width: 100%;" autofocus>
-        <option value="tracks/1276388710">Rhea Silvia - Carbon Birds</option>
-        <option value="tracks/629033148">Sebek & Rhea Silvia - Daedalus</option>
-      </select>  
+    <td>
+    <select id="fileList" Size="20" style="width: 100%;" autofocus>
+      <option value="tracks/1276388710">Rhea Silvia - Carbon Birds</option>
+      <option value="tracks/629033148">Sebek & Rhea Silvia - Daedalus</option>
+    </select>
     </td>
-    <td><img id="cover" style="max-width:250px;"></img></td>
+    <td><img id="cover" style="max-width:300px;"></img></td>
   </tr>
 </table>
 <input type="button" onclick ="exportList();" value="Export" />
@@ -62,7 +64,7 @@
   var fileSelector = document.getElementById("selector"),
   fileList = document.getElementById("fileList"),
   pos = $('div[class="pos"]'),
-  info = $('div[class="info"]'),
+  playerInfo = $('div[class="Pinfo"]'),
   player = $('audio[class="player"]'),
   deck = $('div[class="SCpayer"]'),
   prevSecs = -1,

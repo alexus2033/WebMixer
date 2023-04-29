@@ -17,7 +17,8 @@
 
     // load file into next available player
     function loadLocalFile(file,autoplay = false){
-        var id = 0;
+        var id = 0,
+            info = file.name;
         if(control[0].playing){
           id = 1;
         }
@@ -25,6 +26,20 @@
         if(autoplay){
             control[id].play();
         }
+        if(window.jsmediatags){
+            window.jsmediatags.read(file, {
+            onSuccess: function(result) {
+                if(result.tags.artist && result.tags.title){
+                    info=result.tags.artist + " - " + result.tags.title;
+                }
+                if(result.tags.genre){
+                    info+="<br>"+result.tags.genre;
+                }
+                playerInfo[id].innerHTML = info;
+            }
+            });
+        }
+        playerInfo[id].innerHTML = info;
     }
 
     // slow down or speed up playback

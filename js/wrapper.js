@@ -122,7 +122,6 @@ class Wrapper {
         this.player.setAttribute('controls',''); 
         this.player.setAttribute('src', src);
         this.player.load();
-        info[this.id].innerText = file.name;
     }
 
     play() {

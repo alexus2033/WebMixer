@@ -23,6 +23,10 @@ function displayCover(audioURL){
       var x = audioURL.substring(5);
       window.jsmediatags.read(fileStore[x-1], {
           onSuccess: function(tag) {
+            if(!tag.tags.picture){
+                img.src = "";
+                return;
+            }
             const { data, format } = tag.tags.picture;
             let base64String = "";
             for (let i = 0; i < data.length; i++) {
