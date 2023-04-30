@@ -1,8 +1,9 @@
 # Alphabeat Web Player/Mixer with Soundcloud-Integration
 
 ## Features
-* Start without Installation
+* Start [here](https://alexus2033.github.io/WebMixer/cloudplayer.html) without Installation
 * Slim Web-Interface for all modern Browsers
+* No Account/Login needed
 * 2 Decks for Soundcloud-Tracks or local Sound-Files
 * Fast Track-Selector
 * End-of-Track Indicator

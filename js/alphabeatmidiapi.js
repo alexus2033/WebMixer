@@ -34,7 +34,6 @@
 		setDefault();
 
 		midiAccess.onstatechange = (event) => {
-			console.log("onstatechange");
 			assignInputsAndOutputs(midiAccess);
 			setDefault();
 		};

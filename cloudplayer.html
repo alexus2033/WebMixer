@@ -16,7 +16,7 @@
   <script type= "text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
   <script type= "text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 </HEAD>
-<body>
+<body style="background-color:rgb(166, 170, 169);">
 <table>
   <tr>
     <th>Deck 1</th>
@@ -52,12 +52,10 @@
     <td><img id="cover" style="max-width:300px;"></img></td>
   </tr>
 </table>
-<input type="button" onclick ="exportList();" value="Export" />
+<input type="button" onclick ="exportCSV();" value="Export" />
 <pre id="log"></pre>
-<div id = "openDiag" title = "Soundcloud">
-  <label for="trackTitle">Title:</label>
-  <input id="trackTitle" placeholer="Title"></input><br>
-  <label for="url">Enter URL to load an new track:</label>
+<div id = "openDiag" title = "Add Track">
+  <label for="url">Enter URL or Embed-Code</label>
   <input type="url" id="SCurl" placeholder="https://api.soundcloud.com/tracks/" pattern="https://.*" size="35" required>
 </div>
 <script>
@@ -108,12 +106,11 @@
       Cancel: function() {
         $(this).dialog("close");},
       Add: function() {
-        var tt = document.getElementById("trackTitle");
-        addURL(tt.value, $("#SCurl").val());
+        addURL($("#SCurl").val());
         $(this).dialog("close");}
     },
     close: function() {
-        document.getElementById("trackTitle").value = "";
+        document.getElementById("SCurl").value = "";
     }});
 
   fileList.addEventListener("change", listChanged); //not triggered via MIDI

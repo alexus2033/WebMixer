@@ -12,6 +12,9 @@ function killTitle(songURL){
 
 function writeTitle(songURL,title,artist,cover){
     if (typeof(Storage) !== "undefined" && songURL) {
+        if(songURL.startsWith("/")){
+            songURL = songURL.substring(1);
+        }
         const data = [title,artist,cover];
         localStorage.setItem(songURL, JSON.stringify(data));    
     }
@@ -40,8 +43,8 @@ function displayCover(audioURL){
         });
     } else { //not startsWith('file')
       var songInfo = readTitle(audioURL),
-          cover = "";
-      if(songInfo.length>2){
+          cover = "";  
+      if(songInfo[2]){
         cover = songInfo[2];
         if(cover.endsWith("large.jpg")){
             cover = cover.replace("large.jpg","t500x500.jpg");
@@ -73,7 +76,7 @@ function importCSV(file){
     reader.readAsText(file);
 }
 
-function exportList(){
+function exportCSV(){
     const link = document.createElement("a");
     var content = "";
     Object.keys(localStorage).filter(function(key){
@@ -108,24 +111,19 @@ function readTitles(readCallback){
     });
 }
 
-function addURL(title,newUrl){
-    newUrl = SCextractID(newUrl);
+function addURL(something){
+    newUrl = SCextractID(something);
     if(!newUrl) return;
-    if(title === ""){
-      title = newUrl;
+    if(readTitle(newUrl)){
+        printInfo(newUrl + " already exists");
+        return;
+    }
+    var title = SCextractTitle(something);
+    if(!title){ //fallback
+        title = newUrl;
     }
     writeTitle(newUrl,title);
     addListEntry(title,newUrl);
-}
-
-function SCextractID(bigURL){
-    bigURL = bigURL.trim().toLowerCase();
-    var pos = bigURL.indexOf("tracks/");
-    if(pos < 0){
-      pos = bigURL.indexOf("users/");
-    }
-    if(pos < 0) return null;
-    return bigURL.substring(pos);
 }
 
 // format number with leading zero

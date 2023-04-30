@@ -63,6 +63,28 @@
             }
         });    
     }
+
+    function SCextractTitle(bigURL){
+        const regex = new RegExp("(title=\"((?:\\\\.|[^\"\\\\]){0,})\")", "g");
+        var x, result;
+        while ((x = regex.exec(bigURL))!= null) {
+            if(x.length>1){
+                result = x[2];
+            }
+        }
+        return result;
+    }
+
+    function SCextractID(bigURL){
+        var SCid = bigURL.match(/\/tracks\/[0-9]+/i);
+        if(SCid.length==0){
+            SCid = bigURL.match(/\/users\/[0-9]+/i);
+        }
+        if(SCid.length==0){
+            return null;
+        }
+        return SCid[0].substring(1).toLowerCase();
+    }
     
     function SCgetCurrentTitle(id,currentSound){
         var SCurl = SCextractID(currentSound.uri),
