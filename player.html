@@ -1,123 +1,154 @@
-<!DOCTYPE html>
-<HTML>
-<HEAD>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<meta http-equiv="Content-Script-Type" content="text/javascript">
-	<meta name="Keywords" content="webMIDIAPI,Controller,Alphabeat">
-	<title>Alphabeat Player</title>
-	<script src="https://code.jquery.com/jquery-1.11.2.js"></script>
-  <script type="text/javascript" src="js/alphabeatmidiapi.js"></script>
-  <script type="text/javascript" src="js/wrapper.js"></script>
-	<script type="text/javascript" src="js/player.js"></script>
-</HEAD>
-<body>
-<table>
-  <tr>
-    <th>Deck 1</th>
-    <th></th>
-    <th>Deck 2</th>
-  </tr>
-  <tr>
-    <td><div class="info"></div><div class="pos"></div></td>
-    <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple></td>
-    <td><div class="info"></div><div class="pos"></div></td>
-  </tr>
-  <tr>
-    <td><audio controls class="player" preload="metadata"></audio></td>
-    <td><input type="button" value="Open..." onclick="document.getElementById('selector').click();" /></td>
-    <td><audio controls class="player" preload="metadata"></audio></td>
-  </tr>
-  <tr>
-    <td colspan="3">
-      <select id="fileList" Size="10" style="width: 100%;">
-      </select>  
-    </td>
-  </tr>
-</table>
-Messages:
-<pre id="log"></pre>
-<script>
-  var fileSelector = document.getElementById("selector"),
-  fileList = document.getElementById("fileList"),
-  pos = $('div[class="pos"]'),
-  info = $('div[class="info"]'),
-  player = $('audio[class="player"]'),
-  prevSecs = -1,
-  prevMins = -1,
-  fileStore = [];
+<!doctype html>
+<html lang = "en">
+   <head>
+      <meta charset = "utf-8">
+      <title>Soundcloud loader</title>
+      <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel = "stylesheet">
+      <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
+      <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+      <script type= "text/javascript" src="js/helper.js"></script>
+      <script src="https://unpkg.com/wavesurfer.js"></script>
+      <!-- plugins -->
+      <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
+   </head>
+   
+   <body>
+      <table width="100%">
+         <tr>
+            <th>Deck 1</th>
+            <th width="8%"></th>
+            <th>Deck 2</th>
+          </tr>
+          <tr>
+            <td><div class="info"></div><div class="pos"></div></td>
+            <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple>
+               <input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
+            <td><div class="info"></div><div class="pos"></div></td>
+          </tr>
+          <tr>
+            <td><div id="deck1"></div></td>
+            <td><input type="button" value="Audius Track" onclick ="loadTrack();" /></td>
+            <td><div id="deck2"></div></td>
+         </tr>
+         <tr>
+            <td><input type="button" onclick ="player[0].playPause();" value="Play 1" /></td>
+            <td></td>
+            <td><input type="button" onclick ="player[1].playPause();;" value="Play 2" /></td>
+         </tr>
+      </table>
+      <select id="sel">
+      </select>
+   </body>
+   <script type = "text/javascript" crossorigin="anonymous">
+      'use strict';
+     var fileSelector = document.getElementById("selector"),
+      fileList = document.getElementById("fileList"),
+      pos = $('div[class="pos"]'),
+      info = $('div[class="info"]'),
+      fileStore = [],
+      blinker = false,
+      player = [];
 
-  window.onload = function(){
-	  initMIDI();
-    control[0] = new Wrapper(0);
-    control[1] = new Wrapper(1);
-  }
+      (async () => {  //permission for "speaker-selection" not supported yet
+         const query = await navigator.permissions.query( { name: "microphone" } );
+         switch( query.state ) {
+            case "prompt":
+               console.log("prompt for permission...");
+               await queryUserMedia();
+               await listOutputDevices();
+               break;
+            case "granted": await listOutputDevices();
+         }
+         function queryUserMedia() {
+            return navigator.mediaDevices.getUserMedia( { audio: true } );
+         }
+         async function listOutputDevices() {
+            const all_devs = await navigator.mediaDevices.enumerateDevices();
+            const audioouts = all_devs.filter( ({ kind }) => kind === "audiooutput" );
+            const options = audioouts.map( ( dev, index ) => {
+               const name = dev.label || ('audio out ' + index );
+               return new Option( name , dev.deviceId );
+            } );
+            sel.append.apply( sel, options );
+            sel.onchange = e => player[0].setSinkId( sel.value );
+         }
+      })().catch( console.error );
+      
+      var pHead = WaveSurfer.playhead.create({
+         returnOnPause: false,
+         moveOnSeek: true,
+         draw: true
+      });
 
-  window.onbeforeunload = function(){
-    killPlayer();
-  };
+      player[0] = WaveSurfer.create({
+         container: document.querySelector('#deck1'),
+         scrollParent: true,
+         waveColor: '#3B8686',
+         progressColor: '#A8DBA8', 
+         backend: 'MediaElement',
+         cursorColor : 'red',
+         plugins: [ pHead ]
+      });
+      player[1] = WaveSurfer.create({
+         container: document.querySelector('#deck2'),
+         scrollParent: true,
+         waveColor: '#3B8686',
+         progressColor: '#A8DBA8', 
+         backend: 'MediaElement',
+         cursorColor : 'red',
+         plugins: [ pHead ]
+      });
 
-  fileList.ondblclick = function(){
-    if(this.selectedIndex >=0){
-      loadLocalFile(fileStore[this.selectedIndex]);
+   for (let x=0; x<player.length; x++) {
+      player[x].on('loading', function(e) {
+         pos[x].innerText = `loading ${e}%`;
+      });
+      player[x].on('waveform-ready', function(e) { displayTime(x) });
+      player[x].on('audioprocess', function(e) { displayTime(x) });
     }
-  };
-
-  fileList.addEventListener("keyup", (event) => {
-    const selectedIdx = fileList.selectedIndex; 
-    if(event.repeat || selectedIdx < 0)
-      return;
-
-    switch (event.key) {
-      case "Enter":
-        loadTitle(fileStore[selectedIdx]);
-      break;
-      case " ": //Space-Key
-        var id = loadTitle(fileStore[selectedIdx]);
-        player[id].play();
-      break;  
-      case "Del":
-      case "Delete":
-        fileStore.splice(selectedIdx, 1);
-        fileList.remove(selectedIdx);
-      break;
-      default:
-        // printInfo(`Key "${event.key}" pressed [event: keydown]`);
-      return;
-    } 
-  },false);
-
-  // drag & drop files to list
-  fileList.addEventListener("dragenter", drag, false);
-  fileList.addEventListener("dragover", drag, false);
-  fileList.addEventListener("drop", (event) => {
-    drag(event);
-    const dt = event.dataTransfer;
-    addFiles(dt.files);
-  });
-
-  function drag(event) {
-    event.stopPropagation();
-    event.preventDefault();
-  }
-
-  function addFiles(files){
-    var count = fileStore.push.apply(fileStore,files);
-    printInfo(`${files.length} files added`);
-    Array.from(files).forEach(item => {
-      var option = document.createElement("option");
-      option.text = item.name;
-      fileList.add(option); 
+    player[0].on('ready', function(e) {
+      player[0].playhead.setPlayheadTime(2.1);
+   });
+    player[1].on('ready', function(e) {
+      player[1].playhead.setPlayheadTime(0);
     });
-  }
-
-// New File selected
-fileSelector.addEventListener('change', (event) => {
+   function displayTime(id){
+      var remain = player[id].getDuration() - player[id].getCurrentTime();
+      var mins = parseInt((remain/60)%60),
+          secs = parseInt(remain%60),
+          millis = remain.toFixed(2).slice(-2,-1);
+      pos[id].innerText = `-${mins}:${secs.pad(2)}.${millis}`;
+      if(remain < 21 && remain > 0){
+         player[id].setWaveColor('red');
+         blinker = true;
+      } else if (blinker){
+         player[id].setWaveColor('#3B8686');
+         blinker = false;
+      }
+   }
+   function loadTrack(){
+      var nextID = 0;
+      //var track = new Audio(`/tracks/WgRdR6l/stream?app_name=AlphabeatPlayer`);
+      var track = new Audio(`https://discoveryprovider.audius.co/v1/tracks/qGBBkOP/stream?app_name=AlphabeatPlayer`);
+      if(player[nextID].isPlaying()){
+         nextID = 1;
+      }
+      player[nextID].load(track);
+   }
+   function addFiles(files){
+      var nextID = 0,
+          count = fileStore.push.apply(fileStore,files);
+      const src = URL.createObjectURL(files[0]);
+      if(player[nextID].isPlaying()){
+         nextID = 1;
+      }
+      player[nextID].load(src);
+   }
+   // New File selected
+   fileSelector.addEventListener('change', (event) => {
   if(fileSelector.files.length > 0){
     addFiles(fileSelector.files);
   }
 });
-
-createPlayerEvents();
-
 </script>
-</body>
+</html>
