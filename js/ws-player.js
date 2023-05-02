@@ -128,14 +128,17 @@
                 printInfo("1 Output-Device detected"); 
                 return;
             }
-            console.log(audioouts);
             const options = audioouts.map( ( dev, index ) => {
-              const name = dev.label || ('audio out ' + index );
-              return new Option( name , dev.deviceId );
+                const name = dev.label || ('audio out ' + index );
+                return new Option( name , dev.deviceId );
             } );
-           sel.append.apply( sel, options );
-           sel.onchange = e => player[0].setSinkId( sel.value );
-           $("#output").visible();
+
+            $("#output").append.apply( $("#output"), options );
+            $("#output").onchange = e => {
+                console.log( $("#output").value ); 
+                player[0].setSinkId( $("#output").value );
+            };
+            $("#output").show();
         }
      })().catch( console.error );
 }
