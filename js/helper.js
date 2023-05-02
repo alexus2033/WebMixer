@@ -126,6 +126,21 @@ function addURL(something){
     addListEntry(title,newUrl);
 }
 
+function printInfo(value){
+    if(log!=null){
+        value += "\n";
+        log.innerText += value;
+    } else {
+        console.log(value);
+    }
+}
+
+function clearInfo(){
+    if(log!=null){
+        log.innerText = "";
+    }
+}
+
 // format number with leading zero
 Number.prototype.pad = function(size) {
     var s = String(this);

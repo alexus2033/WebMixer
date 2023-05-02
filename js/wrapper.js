@@ -8,6 +8,9 @@ class Wrapper {
 
     constructor(id) {
         this.id = id;
+        this.#prevMinss = -1;
+        this.#prevSecss = -1;
+        this.#remain = -1;
         this.#eom = false;
         this.#playing = false;
         this.#active = false;
@@ -80,6 +83,32 @@ class Wrapper {
         } else {
             sendShortMsg([0x90,playLED+this.id,0x01]);
         }
+    }
+
+    set remain(newValue) {
+        this.#remain = newValue;
+        this.mins = parseInt((newValue/60)%60);
+        this.secs = parseInt(newValue%60);
+        this.millis = newValue.toFixed(2).slice(-2,-1);
+        sendShortMsg([0x94+this.id, 0x16, millis]);
+        if(this.#prevSecss != secs){
+            sendShortMsg([0x94+this.id, 0x15, secs]);
+            this.#prevSecss = secs;
+        }
+        if(this.#prevMinss != mins){
+            sendShortMsg([0x94+this.id, 0x14, mins]);
+            this.#prevMinss = mins;
+        }
+        if(remain < 21 && remain > 0 && this.EOM == false){
+            this.EOM = true;
+        }
+        if(this.mins && outputs.length == 0){
+            pos[this.id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
+        }
+    }
+
+    get remain(){
+        return this.#remain;
     }
 
     get playing() {

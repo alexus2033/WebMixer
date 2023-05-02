@@ -153,27 +153,6 @@
         var widgetIframe = document.getElementById(`sc-player${id}`),
             widget = SC.Widget(widgetIframe);
 
-        var remain = SCPlayerDuration[id] - SCPlayerPosition[id];
-        remain=remain/1000;
-        var mins = parseInt((remain/60)%60),
-        secs = parseInt(remain%60),
-        millis = remain.toFixed(2).slice(-2,-1);
-        if(millis >= 0){
-            sendShortMsg([0x94+id, 0x16, millis]);
-        }
-        if(prevSecs != secs){
-            sendShortMsg([0x94+id, 0x15, secs]);
-            prevSecs = secs;
-        }
-        if(prevMins != mins){
-            sendShortMsg([0x94+id, 0x14, mins]);
-            prevMins = mins;
-        }
-        if(remain < 21 && remain > 0 && control[id].EOM == false){
-            control[id].EOM = true;
-        }
-        if(mins && outputs.length == 0){
-            pos[id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
-        }
+        control[id].remain = (SCPlayerDuration[id] - SCPlayerPosition[id])/1000;
     }
 }

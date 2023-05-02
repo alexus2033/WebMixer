@@ -2,14 +2,16 @@
 <html lang = "en">
    <head>
       <meta charset = "utf-8">
-      <title>Soundcloud loader</title>
+      <title>Wavesurfer Test</title>
       <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel = "stylesheet">
       <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
       <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-      <script type= "text/javascript" src="js/helper.js"></script>
-      <script src="https://unpkg.com/wavesurfer.js"></script>
+      <script src = "https://unpkg.com/wavesurfer.js"></script>
       <!-- plugins -->
-      <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
+      <script src = "https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
+      <!-- internals-->
+      <script type = "text/javascript" src="js/helper.js"></script>
+      <script type = "text/javascript" src="js/ws-player.js"></script>
    </head>
    
    <body>
@@ -26,107 +28,65 @@
             <td><div class="info"></div><div class="pos"></div></td>
           </tr>
           <tr>
-            <td><div id="deck1"></div></td>
-            <td><input type="button" value="Audius Track" onclick ="loadTrack();" /></td>
-            <td><div id="deck2"></div></td>
+            <td><div class="deck"></div></td>
+            <td><input type="button" value="Audius Track" onclick ="loadAudiusTrack();" /></td>
+            <td><div class="deck"></div></td>
          </tr>
          <tr>
-            <td><input type="button" onclick ="player[0].playPause();" value="Play 1" /></td>
+            <td><input type="button" onclick ="player[0].playPause();" value="Play 1" />
+            <select id="output" style="display: none;"></select></td>
             <td></td>
             <td><input type="button" onclick ="player[1].playPause();;" value="Play 2" /></td>
          </tr>
       </table>
-      <select id="sel">
-      </select>
+      <table>
+         <tr>
+           <td>
+           <select id="fileList" Size="20" style="width: 100%;" autofocus>
+             <option value="tracks/1276388710">Rhea Silvia - Carbon Birds</option>
+             <option value="tracks/629033148">Sebek & Rhea Silvia - Daedalus</option>
+           </select>
+           </td>
+           <td><img id="cover" style="max-width:300px;"></img></td>
+         </tr>
+      </table>
+      <pre id="log"></pre>
+      <div id = "openDiag" title = "Add Track">
+      <label for="url">Enter URL or Embed-Code</label>
+      <input type="url" id="SCurl" placeholder="https://api.soundcloud.com/tracks/" pattern="https://.*" size="35" required>
+      </div>
    </body>
-   <script type = "text/javascript" crossorigin="anonymous">
+   <script type = "text/javascript">
       'use strict';
      var fileSelector = document.getElementById("selector"),
       fileList = document.getElementById("fileList"),
       pos = $('div[class="pos"]'),
       info = $('div[class="info"]'),
+      deck = $('div[class="deck"]'),
       fileStore = [],
-      blinker = false,
-      player = [];
+      player = [],
+      blinker = false;
 
-      (async () => {  //permission for "speaker-selection" not supported yet
-         const query = await navigator.permissions.query( { name: "microphone" } );
-         switch( query.state ) {
-            case "prompt":
-               console.log("prompt for permission...");
-               await queryUserMedia();
-               await listOutputDevices();
-               break;
-            case "granted": await listOutputDevices();
-         }
-         function queryUserMedia() {
-            return navigator.mediaDevices.getUserMedia( { audio: true } );
-         }
-         async function listOutputDevices() {
-            const all_devs = await navigator.mediaDevices.enumerateDevices();
-            const audioouts = all_devs.filter( ({ kind }) => kind === "audiooutput" );
-            const options = audioouts.map( ( dev, index ) => {
-               const name = dev.label || ('audio out ' + index );
-               return new Option( name , dev.deviceId );
-            } );
-            sel.append.apply( sel, options );
-            sel.onchange = e => player[0].setSinkId( sel.value );
-         }
-      })().catch( console.error );
-      
-      var pHead = WaveSurfer.playhead.create({
-         returnOnPause: false,
-         moveOnSeek: true,
-         draw: true
-      });
+      $("#openDiag").dialog({autoOpen: false, width: 380,
+      buttons: {
+         Cancel: function() {
+         $(this).dialog("close");},
+         Add: function() {
+         addURL($("#SCurl").val());
+         $(this).dialog("close");}
+      },
+      close: function() {
+         document.getElementById("SCurl").value = "";
+      }});
 
-      player[0] = WaveSurfer.create({
-         container: document.querySelector('#deck1'),
-         scrollParent: true,
-         waveColor: '#3B8686',
-         progressColor: '#A8DBA8', 
-         backend: 'MediaElement',
-         cursorColor : 'red',
-         plugins: [ pHead ]
-      });
-      player[1] = WaveSurfer.create({
-         container: document.querySelector('#deck2'),
-         scrollParent: true,
-         waveColor: '#3B8686',
-         progressColor: '#A8DBA8', 
-         backend: 'MediaElement',
-         cursorColor : 'red',
-         plugins: [ pHead ]
-      });
-
-   for (let x=0; x<player.length; x++) {
-      player[x].on('loading', function(e) {
-         pos[x].innerText = `loading ${e}%`;
-      });
-      player[x].on('waveform-ready', function(e) { displayTime(x) });
-      player[x].on('audioprocess', function(e) { displayTime(x) });
-    }
-    player[0].on('ready', function(e) {
-      player[0].playhead.setPlayheadTime(2.1);
-   });
-    player[1].on('ready', function(e) {
-      player[1].playhead.setPlayheadTime(0);
-    });
-   function displayTime(id){
-      var remain = player[id].getDuration() - player[id].getCurrentTime();
-      var mins = parseInt((remain/60)%60),
-          secs = parseInt(remain%60),
-          millis = remain.toFixed(2).slice(-2,-1);
-      pos[id].innerText = `-${mins}:${secs.pad(2)}.${millis}`;
-      if(remain < 21 && remain > 0){
-         player[id].setWaveColor('red');
-         blinker = true;
-      } else if (blinker){
-         player[id].setWaveColor('#3B8686');
-         blinker = false;
+      window.onload = function(){
+         //initMIDI();
+         initPlayers();
+         //readTitles(addListEntry);
       }
-   }
-   function loadTrack(){
+
+      
+   function loadAudiusTrack(){
       var nextID = 0;
       //var track = new Audio(`/tracks/WgRdR6l/stream?app_name=AlphabeatPlayer`);
       var track = new Audio(`https://discoveryprovider.audius.co/v1/tracks/qGBBkOP/stream?app_name=AlphabeatPlayer`);
