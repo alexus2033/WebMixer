@@ -104,41 +104,48 @@
             });
 		}
 	}
-    (async () => {  
-        //permission for "speaker-selection" not supported yet
-        const query = await navigator.permissions.query( { name: "microphone" } );
-        switch( query.state ) {
-           case "prompt":
-              printInfo("prompt for permission...");
-              await queryUserMedia();
-              await listOutputDevices();
-              break;
-           case "granted": await listOutputDevices();
-        }
-    
-        function queryUserMedia() {
-           return navigator.mediaDevices.getUserMedia( { audio: true } );
-        }
-    
-        async function listOutputDevices() {
-            const all_devs = await navigator.mediaDevices.enumerateDevices();
-            const audioouts = all_devs.filter( ({ kind }) => kind === "audiooutput" );
-            if(audioouts.length<2){
-                clearInfo();
-                printInfo("1 Output-Device detected"); 
-                return;
-            }
-            const options = audioouts.map( ( dev, index ) => {
-                const name = dev.label || ('audio out ' + index );
-                return new Option( name , dev.deviceId );
-            } );
 
-            $("#output").append.apply( $("#output"), options );
-            $("#output").onchange = e => {
-                console.log( $("#output").value ); 
-                player[0].setSinkId( $("#output").value );
-            };
-            $("#output").show();
-        }
-     })().catch( console.error );
+    (async () => {  //permission for "speaker-selection" not supported yet
+         const query = await navigator.permissions.query( { name: "microphone" } );
+         switch( query.state ) {
+            case "prompt":
+               await queryUserMedia();
+               await listOutputDevices();
+               clearInfo();
+               break;
+            case "granted":
+               await listOutputDevices();
+         }
+
+         function queryUserMedia() {
+            printInfo("prompt for permission to select audio-devices...");
+            return navigator.mediaDevices.getUserMedia( { audio: true } );
+         }
+
+         navigator.mediaDevices.ondevicechange = function(event) {
+            listOutputDevices();
+         }
+
+         async function listOutputDevices() {
+            $(".selectOut").empty();
+            navigator.mediaDevices.enumerateDevices()
+            .then(function(devices) {
+                devices.filter(({ kind }) => kind === "audiooutput").forEach(function(dev, index) {
+                    const name = dev.label || ('audio out ' + (index+1)); 
+                    out1.append(new Option(name, dev.deviceId));
+                    out2.append(new Option(name, dev.deviceId));
+                    if(index > 0){
+                        $(".selectOut").show();
+                    }
+                });
+                out1.onchange = e => player[0].setSinkId(out1.value);
+                out2.onchange = e => player[1].setSinkId(out2.value);
+                printInfo(out1.length + " Devices detected");               
+                })
+            .catch(function(err) {
+                console.log(err.name + ": " + err.message);
+            });            
+         }
+
+      })().catch( console.error );
 }
