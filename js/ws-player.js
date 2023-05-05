@@ -11,6 +11,7 @@
     });
     var pOps = {
         scrollParent: true,
+        normalize: true,
         waveColor: '#3B8686',
         progressColor: '#A8DBA8', 
         backend: 'MediaElement',
@@ -29,6 +30,8 @@
             player[id].on('waveform-ready', function(e) { displayTime(id) });
             player[id].on('audioprocess', function(e) { displayTime(id) });
             player[id].on('ready', function(e) { player[id].playhead.setPlayheadTime(0); });
+            player[id].on('play', function(e) { $(".playstop")[id].value = "Stop " });
+            player[id].on('pause', function(e) { $(".playstop")[id].value = "Play " });
         });
     }
 
@@ -140,7 +143,7 @@
                 });
                 out1.onchange = e => player[0].setSinkId(out1.value);
                 out2.onchange = e => player[1].setSinkId(out2.value);
-                printInfo(out1.length + " Devices detected");               
+                printInfo((out1.length > 1) ? out1.length + " Devices detected" : "1 Device detected");               
                 })
             .catch(function(err) {
                 console.log(err.name + ": " + err.message);

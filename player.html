@@ -17,9 +17,9 @@
    <body>
       <table width="100%">
          <tr>
-            <th>Deck 1</th>
-            <th width="8%"></th>
-            <th>Deck 2</th>
+            <th width="46%">Deck 1</th>
+            <th></th>
+            <th width="46%">Deck 2</th>
           </tr>
           <tr>
             <td><div class="info"></div><div class="pos"></div></td>
@@ -29,17 +29,18 @@
           </tr>
           <tr>
             <td><div class="deck"></div></td>
-            <td><input type="button" value="Audius Track" onclick ="loadAudiusTrack();" /></td>
+            <td><input type="button" id="urlOpen" value="Audius Track" /></td>
             <td><div class="deck"></div></td>
          </tr>
          <tr>
-            <td><input type="button" onclick ="player[0].playPause();" value="Play 1" />
-            <select id="output" style="display: none;"></select></td>
+            <td><input type="button" class="playstop" onclick ="player[0].playPause();" value="Play " />
+            <select class="selectOut" id="out1" style="display: none;"></select></td>
             <td></td>
-            <td><input type="button" onclick ="player[1].playPause();;" value="Play 2" /></td>
+            <td><input type="button" class="playstop" onclick ="player[1].playPause();;" value="Play " />
+            <select class="selectOut" id="out2" style="display: none;"></select></td>
          </tr>
       </table>
-      <table>
+      <table width="80%">
          <tr>
            <td>
            <select id="fileList" Size="20" style="width: 100%;" autofocus>
@@ -51,14 +52,16 @@
          </tr>
       </table>
       <pre id="log"></pre>
-      <div id = "openDiag" title = "Add Track">
+      <div id = "openDiag" title = "Add Audius Track">
       <label for="url">Enter URL or Embed-Code</label>
-      <input type="url" id="SCurl" placeholder="https://api.soundcloud.com/tracks/" pattern="https://.*" size="35" required>
+      <input type="url" id="SCurl" placeholder="https://discoveryprovider.audius.co/v1/tracks/" pattern="https://.*" size="35" required>
       </div>
    </body>
    <script type = "text/javascript">
       'use strict';
      var fileSelector = document.getElementById("selector"),
+      out1 = document.getElementById("out1"),
+      out2 = document.getElementById("out2"),
       fileList = document.getElementById("fileList"),
       pos = $('div[class="pos"]'),
       info = $('div[class="info"]'),
@@ -67,6 +70,10 @@
       player = [],
       blinker = false;
 
+      $("#urlOpen").click(function() {
+      ($("#openDiag").dialog("isOpen") == false) ? $(
+        "#openDiag").dialog("open") : $("#openDiag").dialog("close") ;
+      });
       $("#openDiag").dialog({autoOpen: false, width: 380,
       buttons: {
          Cancel: function() {
@@ -86,11 +93,12 @@
       }
 
       
-   function loadAudiusTrack(){
+   function addURL(newTrack){
       var nextID = 0;
-      //var track = new Audio(`/tracks/WgRdR6l/stream?app_name=AlphabeatPlayer`);
-      var track = new Audio(`https://discoveryprovider.audius.co/v1/tracks/qGBBkOP/stream?app_name=AlphabeatPlayer`);
-      if(player[nextID].isPlaying()){
+      //var track = new Audio(`https://discoveryprovider.audius.co/v1/tracks/qGBBkOP/stream
+      //var track = new Audio(`https://discoveryprovider.audius.co/v1/tracks/WgRdR6l/stream
+      var track = new Audio(newTrack + `?app_name=AlphabeatPlayer`);
+      if(player[0].isPlaying() || (player[0].getDuration() > 0 && player[1].getDuration() == 0)){
          nextID = 1;
       }
       player[nextID].load(track);
@@ -99,7 +107,7 @@
       var nextID = 0,
           count = fileStore.push.apply(fileStore,files);
       const src = URL.createObjectURL(files[0]);
-      if(player[nextID].isPlaying()){
+      if(player[0].isPlaying() || (player[0].getDuration() > 0 && player[1].getDuration() == 0)){
          nextID = 1;
       }
       player[nextID].load(src);
