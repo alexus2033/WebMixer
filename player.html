@@ -10,6 +10,7 @@
       <!-- plugins -->
       <script src = "https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
       <!-- internals-->
+      <script type = "text/javascript" src="js/audius.js"></script>
       <script type = "text/javascript" src="js/helper.js"></script>
       <script type = "text/javascript" src="js/ws-player.js"></script>
    </head>
@@ -44,17 +45,23 @@
          <tr>
            <td>
            <select id="fileList" Size="20" style="width: 100%;" autofocus>
-             <option value="tracks/1276388710">Rhea Silvia - Carbon Birds</option>
-             <option value="tracks/629033148">Sebek & Rhea Silvia - Daedalus</option>
+             <option value="audius/qGBBkOP">orange tales - Like that</option>
+             <option value="audius/NQzMK8x">Crying in Sunshine (feat. Arden Jones)</option>
+             <option value="audius/7PAB4A7">Sunrise Series 36</option>
            </select>
            </td>
            <td><img id="cover" style="max-width:300px;"></img></td>
          </tr>
       </table>
       <pre id="log"></pre>
-      <div id = "openDiag" title = "Add Audius Track">
+      <div id = "openDiag" title = "Add new Track">
+      <label for="type">Source</label>
+         <select id="type">
+            <option value="audius"><a href="https://audius.co">Audius</a></option>
+            <option value="SC"><a href="https://soundcloud.com/">Soundcloud</a></option>
+         </select><br>
       <label for="url">Enter URL or Embed-Code</label>
-      <input type="url" id="SCurl" placeholder="https://discoveryprovider.audius.co/v1/tracks/" pattern="https://.*" size="35" required>
+      <input type="url" id="trackUrl" placeholder="https://discoveryprovider.audius.co/v1/tracks/" pattern="https://.*" size="35" required>
       </div>
    </body>
    <script type = "text/javascript">
@@ -79,11 +86,11 @@
          Cancel: function() {
          $(this).dialog("close");},
          Add: function() {
-         addURL($("#SCurl").val());
+         addURL($("#type").val(),$("#trackUrl").val());
          $(this).dialog("close");}
       },
       close: function() {
-         document.getElementById("SCurl").value = "";
+         document.getElementById("trackUrl").value = "";
       }});
 
       window.onload = function(){
@@ -92,17 +99,40 @@
          //readTitles(addListEntry);
       }
 
-      
-   function addURL(newTrack){
-      var nextID = 0;
-      //var track = new Audio(`https://discoveryprovider.audius.co/v1/tracks/qGBBkOP/stream
-      //var track = new Audio(`https://discoveryprovider.audius.co/v1/tracks/WgRdR6l/stream
-      var track = new Audio(newTrack + `?app_name=AlphabeatPlayer`);
+      fileList.ondblclick = loadSelectedEntry;
+
+   function loadSelectedEntry(autoplay = false){
+    const selectedIdx = fileList.selectedIndex;
+    if(selectedIdx < 0) return;
+    var audioElement = fileList.options[selectedIdx].value;
+    if(audioElement.startsWith('file')){
+      var x = audioElement.substring(5);
+      loadLocalFile(fileStore[x-1],autoplay);
+    } else {
+      loadAudiusID(audioElement,autoplay);
+    }
+  }
+
+  async function loadAudiusID(track){
+      track = track.replace("audius/","tracks/");
+      var nextID = 0,
+          url = AudiusAddress + "/v1/" + track,
+          song = new Audio(`${url}/stream?app_name=AlphabeatPlayer`);
       if(player[0].isPlaying() || (player[0].getDuration() > 0 && player[1].getDuration() == 0)){
          nextID = 1;
       }
-      player[nextID].load(track);
-   }
+      player[nextID].load(song);
+      var meta = await AudiusReadMetadata(url);
+      info[nextID].innerText = meta.title;
+  }
+
+   function addListEntry(title,url){
+    var option = document.createElement("option");
+    option.text = title;
+    option.value = url;
+    fileList.add(option);
+  }
+
    function addFiles(files){
       var nextID = 0,
           count = fileStore.push.apply(fileStore,files);

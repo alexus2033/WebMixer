@@ -111,19 +111,30 @@ function readTitles(readCallback){
     });
 }
 
-function addURL(something){
-    newUrl = SCextractID(something);
+async function addURL(type,something){
+    if(type == "SC"){
+        newUrl = SCextractID(something);
+    } else {
+        newUrl = AudiusExtractID(something);
+    }
     if(!newUrl) return;
     if(readTitle(newUrl)){
         printInfo(newUrl + " already exists");
         return;
     }
-    var title = SCextractTitle(something);
-    if(!title){ //fallback
-        title = newUrl;
+    if(type == "SC"){
+        var meta = SCextractTitle(something),
+            title = (meta ? meta : newUrl),
+            track = newUrl.replace("tracks/","SC/");
+    } else {
+        var url = AudiusAddress + "/v1/" + newUrl,
+          meta = await AudiusReadMetadata(url),
+          title = (meta ? meta.title : newUrl),
+          track = newUrl.replace("tracks/","audius/");
     }
-    writeTitle(newUrl,title);
-    addListEntry(title,newUrl);
+
+    writeTitle(track,title);
+    addListEntry(title,track);
 }
 
 function printInfo(value){
