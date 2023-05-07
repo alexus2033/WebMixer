@@ -8,7 +8,9 @@ function AudiusExtractID(bigURL){
 }
 
 async function AudiusReadMetadata(url){
-        
+    if(!url.startsWith("http")){
+        url = AudiusTrackURL(url);
+    }        
     const headers = {
         'Accept':'application/json'
     };
@@ -25,6 +27,18 @@ async function AudiusReadMetadata(url){
         return content.data;
     });
     return result;
+}
+
+function AudiusStreamURL(track){
+    track = track.replace("audius/","tracks/");
+    var url = AudiusAddress + "/v1/" + track;
+    return `${url}/stream?app_name=AlphabeatPlayer`;
+}
+
+function AudiusTrackURL(track){
+    track = track.replace("audius/","tracks/");
+    var url = AudiusAddress + "/v1/" + track;
+    return `${url}?app_name=AlphabeatPlayer`;
 }
 
 (async () => { 
@@ -46,4 +60,3 @@ async function AudiusReadMetadata(url){
     }
 })().catch( console.error );
 
-console.log(AudiusAddress);

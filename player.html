@@ -2,17 +2,22 @@
 <html lang = "en">
    <head>
       <meta charset = "utf-8">
-      <title>Wavesurfer Test</title>
+      <title>Alphabeat Player</title>
       <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel = "stylesheet">
-      <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
-      <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-      <script src = "https://unpkg.com/wavesurfer.js"></script>
+      <!-- externals -->
+      <script type= "text/javascript" src= "https://code.jquery.com/jquery-1.10.2.js"></script>
+      <script type= "text/javascript" src= "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js"></script>
+      <script type= "text/javascript" src= "https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
       <!-- plugins -->
-      <script src = "https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
       <!-- internals-->
-      <script type = "text/javascript" src="js/audius.js"></script>
-      <script type = "text/javascript" src="js/helper.js"></script>
-      <script type = "text/javascript" src="js/ws-player.js"></script>
+      <script type= "text/javascript" src="js/helper.js"></script>
+      <script type= "text/javascript" src="js/alphabeatmidiapi.js"></script>
+      <script type= "text/javascript" src="js/ws-player.js"></script>
+     <script type= "text/javascript" src="js/sc-player.js"></script>
+     <script type= "text/javascript" src="js/wrapper.js"></script>
+     <script type= "text/javascript" src= "js/audius.js"></script>
    </head>
    
    <body>
@@ -23,10 +28,10 @@
             <th width="46%">Deck 2</th>
           </tr>
           <tr>
-            <td><div class="info"></div><div class="pos"></div></td>
+            <td><div class="pInfo"></div><div class="pos"></div></td>
             <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple>
                <input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
-            <td><div class="info"></div><div class="pos"></div></td>
+            <td><div class="pInfo"></div><div class="pos"></div></td>
           </tr>
           <tr>
             <td><div class="deck"></div></td>
@@ -35,13 +40,13 @@
          </tr>
          <tr>
             <td><input type="button" class="playstop" onclick ="player[0].playPause();" value="Play " />
-            <select class="selectOut" id="out1" style="display: none;"></select></td>
+            <select class="selectOut" id="out1" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
             <td></td>
             <td><input type="button" class="playstop" onclick ="player[1].playPause();;" value="Play " />
-            <select class="selectOut" id="out2" style="display: none;"></select></td>
+            <select class="selectOut" id="out2" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
          </tr>
       </table>
-      <table width="80%">
+      <table>
          <tr>
            <td>
            <select id="fileList" Size="20" style="width: 100%;" autofocus>
@@ -50,9 +55,10 @@
              <option value="audius/7PAB4A7">Sunrise Series 36</option>
            </select>
            </td>
-           <td><img id="cover" style="max-width:300px;"></img></td>
+           <td width="20%"><img id="cover" style="max-width:300px;"></img></td>
          </tr>
       </table>
+      <input type="button" onclick ="exportCSV();" value="Export" />
       <pre id="log"></pre>
       <div id = "openDiag" title = "Add new Track">
       <label for="type">Source</label>
@@ -67,12 +73,16 @@
    <script type = "text/javascript">
       'use strict';
      var fileSelector = document.getElementById("selector"),
+      log = document.getElementById("log"),
       out1 = document.getElementById("out1"),
       out2 = document.getElementById("out2"),
       fileList = document.getElementById("fileList"),
       pos = $('div[class="pos"]'),
-      info = $('div[class="info"]'),
+      playerInfo = $('div[class="pInfo"]'),
+      extraInfo = $('div[class="eInfo"]'),
       deck = $('div[class="deck"]'),
+      prevSecs = -1,
+      prevMins = -1,
       fileStore = [],
       player = [],
       blinker = false;
@@ -93,55 +103,77 @@
          document.getElementById("trackUrl").value = "";
       }});
 
+      fileList.addEventListener("change", listChanged); //not triggered via MIDI
+      fileList.addEventListener("keyup", (event) => {
+         const selectedIdx = fileList.selectedIndex; 
+         if(event.repeat || selectedIdx < 0)
+         return;
+
+      switch (event.key) {
+         case "Enter":
+         loadSelectedEntry();
+         break;
+         case " ": //Space-Key
+         var id = loadSelectedEntry(true);
+         break;  
+         case "Del":
+         case "Delete":
+         var audioElement = fileList.options[selectedIdx].value;
+         if(audioElement.startsWith('file')){
+            var x = audioElement.substring(5);
+            fileStore.splice(x-1, 1);
+         } else {
+            killTitle(audioElement);
+         }
+         fileList.remove(selectedIdx);
+         break;
+         default:
+         // printInfo(`Key "${event.key}" pressed [event: keydown]`);
+         return;
+      } 
+   },false);
+
       window.onload = function(){
-         //initMIDI();
+         initMIDI();
          initPlayers();
-         //readTitles(addListEntry);
+         readTitles(addListEntry);
       }
 
       fileList.ondblclick = loadSelectedEntry;
 
    function loadSelectedEntry(autoplay = false){
-    const selectedIdx = fileList.selectedIndex;
-    if(selectedIdx < 0) return;
-    var audioElement = fileList.options[selectedIdx].value;
-    if(audioElement.startsWith('file')){
-      var x = audioElement.substring(5);
-      loadLocalFile(fileStore[x-1],autoplay);
-    } else {
-      loadAudiusID(audioElement,autoplay);
-    }
-  }
+      const selectedIdx = fileList.selectedIndex;
+      if(selectedIdx < 0) return;
+      var id = availableDeck(),
+         audioElement = fileList.options[selectedIdx].value;
+      control[id].load(audioElement, autoplay);
+   }
 
-  async function loadAudiusID(track){
-      track = track.replace("audius/","tracks/");
-      var nextID = 0,
-          url = AudiusAddress + "/v1/" + track,
-          song = new Audio(`${url}/stream?app_name=AlphabeatPlayer`);
-      if(player[0].isPlaying() || (player[0].getDuration() > 0 && player[1].getDuration() == 0)){
-         nextID = 1;
-      }
-      player[nextID].load(song);
-      var meta = await AudiusReadMetadata(url);
-      info[nextID].innerText = meta.title;
-  }
+   function listChanged(){
+	   const selectedIdx = fileList.selectedIndex;
+		if(selectedIdx > -1){
+			  displayCover(fileList.options[selectedIdx].value);
+		}
+	}
 
    function addListEntry(title,url){
-    var option = document.createElement("option");
-    option.text = title;
-    option.value = url;
-    fileList.add(option);
+      var option = document.createElement("option");
+      option.text = title;
+      option.value = url;
+      fileList.add(option);
   }
 
-   function addFiles(files){
-      var nextID = 0,
-          count = fileStore.push.apply(fileStore,files);
-      const src = URL.createObjectURL(files[0]);
-      if(player[0].isPlaying() || (player[0].getDuration() > 0 && player[1].getDuration() == 0)){
-         nextID = 1;
+  function addFiles(files){
+    Array.from(files).forEach(item => {
+      if(item.name.endsWith(".csv")){
+        importCSV(item);
+      } else {
+        var x = fileStore.push(item);
+        addListEntry(item.name,'file/' + x);
       }
-      player[nextID].load(src);
-   }
+    });
+  }
+
    // New File selected
    fileSelector.addEventListener('change', (event) => {
   if(fileSelector.files.length > 0){

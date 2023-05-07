@@ -130,19 +130,21 @@ async function addURL(type,something){
         var url = AudiusAddress + "/v1/" + newUrl,
           meta = await AudiusReadMetadata(url),
           title = (meta ? meta.title : newUrl),
+          user = (meta.user.name ? meta.user.name : ""),
+          cover = (meta.artwork['480x480'] ? meta.artwork['480x480'] : ""),
           track = newUrl.replace("tracks/","audius/");
     }
 
-    writeTitle(track,title);
+    writeTitle(track,title,user,cover);
     addListEntry(title,track);
 }
 
 function printInfo(value){
-    if(log!=null){
+    if (typeof log === 'undefined' || log === null) {
+        console.log(value);
+    } else {
         value += "\n";
         log.innerText += value;
-    } else {
-        console.log(value);
     }
 }
 

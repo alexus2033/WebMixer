@@ -21,41 +21,35 @@
 
     function initPlayers(){
         deck.toArray().forEach(function (item, id) {
-            //control[id] = new Wrapper(id);
             pOps.container = item;
             player[id] = WaveSurfer.create(pOps);
             player[id].on('loading', function(e) {
-                pos[id].innerText = `loading ${e-1}%`;
+                if(!player[id].isPlaying() && e<100){
+                    pos[id].innerText = `loading ${e}%`;
+                }
              });
+            control[id] = new Wrapper(id,player[id]);
             player[id].on('waveform-ready', function(e) { displayTime(id) });
             player[id].on('audioprocess', function(e) { displayTime(id) });
-            player[id].on('ready', function(e) { player[id].playhead.setPlayheadTime(0); });
-            player[id].on('play', function(e) { $(".playstop")[id].value = "Stop " });
-            player[id].on('pause', function(e) { $(".playstop")[id].value = "Play " });
+            player[id].on('ready', function(e) {
+                control[id].duration = player[id].getDuration();  
+                player[id].playhead.setPlayheadTime(0); });
+            player[id].on('play', function(e) { control[id].playing = true; });
+            player[id].on('pause', function(e) { control[id].playing = false; });
         });
     }
 
-    // load file into next available player
-    function loadLocalFile(file,autoplay = false){
-        var id = 0,
-            info = file.name;
-        if(control[0].playing){
-          id = 1;
-        }
-        control[id].loadFile(file);
-        if(autoplay){
-            control[id].play();
-        }
+    function WSupdateMetadata(id,file){
+        var info = file.name;
         if(window.jsmediatags){
             window.jsmediatags.read(file, {
             onSuccess: function(result) {
+                console.log(result.tags);
                 if(result.tags.artist && result.tags.title){
                     info=result.tags.artist + " - " + result.tags.title;
                 }
-                if(result.tags.genre){
-                    info+="<br>"+result.tags.genre;
-                }
-                playerInfo[id].innerHTML = info;
+                playerInfo[id].innerText = info;
+                extraInfo[id].innerText = result.tags.genre ? result.tags.genre : "";
             }
             });
         }
@@ -84,6 +78,17 @@
         var mins = parseInt((remain/60)%60),
             secs = parseInt(remain%60),
             millis = remain.toFixed(2).slice(-2,-1);
+        if(millis >= 0){
+            sendShortMsg([0x94+id, 0x16, millis]);
+        }
+        if(prevSecs != secs){
+            sendShortMsg([0x94+id, 0x15, secs]);
+            prevSecs = secs;
+        }
+        if(prevMins != mins){
+            sendShortMsg([0x94+id, 0x14, mins]);
+            prevMins = mins;
+        }
         pos[id].innerText = `-${mins}:${secs.pad(2)}.${millis}`;
         if(remain < 21 && remain > 0){
            player[id].setWaveColor('red');
