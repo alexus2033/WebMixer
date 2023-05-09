@@ -125,7 +125,9 @@ async function addURL(type,something){
     if(type == "SC"){
         var meta = SCextractTitle(something),
             title = (meta ? meta : newUrl),
-            track = newUrl.replace("tracks/","SC/");
+            track = newUrl.replace("tracks/","SC/"),
+            user = "", //completed later
+            cover = "";
     } else {
         var url = AudiusAddress + "/v1/" + newUrl,
           meta = await AudiusReadMetadata(url),
@@ -136,7 +138,7 @@ async function addURL(type,something){
     }
 
     writeTitle(track,title,user,cover);
-    addListEntry(title,track);
+    addListEntry(title,track,true);
 }
 
 function printInfo(value){

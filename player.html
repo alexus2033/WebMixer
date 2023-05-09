@@ -9,15 +9,16 @@
       <script type= "text/javascript" src= "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
       <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js"></script>
       <script type= "text/javascript" src= "https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+      <script type= "text/javascript" src= "https://w.soundcloud.com/player/api.js"></script>
       <!-- plugins -->
       <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
       <!-- internals-->
-      <script type= "text/javascript" src="js/helper.js"></script>
-      <script type= "text/javascript" src="js/alphabeatmidiapi.js"></script>
-      <script type= "text/javascript" src="js/ws-player.js"></script>
-     <script type= "text/javascript" src="js/sc-player.js"></script>
-     <script type= "text/javascript" src="js/wrapper.js"></script>
-     <script type= "text/javascript" src= "js/audius.js"></script>
+      <script type= "text/javascript" src= "js/helper.js"></script>
+      <script type= "text/javascript" src= "js/alphabeatmidiapi.js"></script>
+      <script type= "text/javascript" src= "js/ws-player.js"></script>
+      <script type= "text/javascript" src= "js/sc-player.js"></script>
+      <script type= "text/javascript" src= "js/wrapper.js"></script>
+      <script type= "text/javascript" src= "js/audius.js"></script>
    </head>
    
    <body>
@@ -28,21 +29,21 @@
             <th width="46%">Deck 2</th>
           </tr>
           <tr>
-            <td><div class="pInfo"></div><div class="pos"></div></td>
+            <td><div class="pos"></div></td>
             <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple>
                <input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
-            <td><div class="pInfo"></div><div class="pos"></div></td>
+            <td><div class="pos"></div></td>
           </tr>
           <tr>
-            <td><div class="deck"></div></td>
-            <td><input type="button" id="urlOpen" value="Audius Track" /></td>
-            <td><div class="deck"></div></td>
+            <td><div class="pInfo"></div><div class="deck"></div></td>
+            <td><input type="button" id="urlOpen" value="URL..." /></td>
+            <td><div class="pInfo"></div><div class="deck"></div></td>
          </tr>
          <tr>
-            <td><input type="button" class="playstop" onclick ="player[0].playPause();" value="Play " />
+            <td><input type="button" class="playstop" onclick ="control[0].togglePlay();" value=" Play " />
             <select class="selectOut" id="out1" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
             <td></td>
-            <td><input type="button" class="playstop" onclick ="player[1].playPause();;" value="Play " />
+            <td><input type="button" class="playstop" onclick ="control[1].togglePlay();;" value=" Play " />
             <select class="selectOut" id="out2" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
          </tr>
       </table>
@@ -101,6 +102,7 @@
       },
       close: function() {
          document.getElementById("trackUrl").value = "";
+         fileList.focus();
       }});
 
       fileList.addEventListener("change", listChanged); //not triggered via MIDI
@@ -156,11 +158,11 @@
 		}
 	}
 
-   function addListEntry(title,url){
+   function addListEntry(title,url,top=false){
       var option = document.createElement("option");
       option.text = title;
       option.value = url;
-      fileList.add(option);
+      fileList.add(option,(top==true)? 0 : null);
   }
 
   function addFiles(files){
@@ -169,9 +171,10 @@
         importCSV(item);
       } else {
         var x = fileStore.push(item);
-        addListEntry(item.name,'file/' + x);
+        addListEntry(item.name,'file/' + x,true);
       }
     });
+    fileList.focus();
   }
 
    // New File selected

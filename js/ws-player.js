@@ -21,25 +21,30 @@
 
     function initPlayers(){
         deck.toArray().forEach(function (item, id) {
-            pOps.container = item;
-            player[id] = WaveSurfer.create(pOps);
-            player[id].on('loading', function(e) {
-                if(!player[id].isPlaying() && e<100){
-                    pos[id].innerText = `loading ${e}%`;
-                }
-             });
-            control[id] = new Wrapper(id,player[id]);
-            player[id].on('waveform-ready', function(e) { displayTime(id) });
-            player[id].on('audioprocess', function(e) { displayTime(id) });
-            player[id].on('ready', function(e) {
-                control[id].duration = player[id].getDuration();  
-                player[id].playhead.setPlayheadTime(0); });
-            player[id].on('play', function(e) { control[id].playing = true; });
-            player[id].on('pause', function(e) { control[id].playing = false; });
+            WScreatePlayer(item, id);
         });
     }
 
-    function WSupdateMetadata(id,file){
+    function WScreatePlayer(container, id){
+        pOps.container = container;
+        player[id] = WaveSurfer.create(pOps);
+        player[id].on('loading', function(e) {
+            if(!player[id].isPlaying() && e<100){
+                pos[id].innerText = `loading ${e}%`;
+            }
+         });
+        control[id] = new Wrapper(id,player[id]);
+        player[id].on('waveform-ready', function(e) { displayTime(id) });
+        player[id].on('audioprocess', function(e) { displayTime(id) });
+        player[id].on('ready', function(e) {
+            control[id].duration = player[id].getDuration();  
+            player[id].playhead.setPlayheadTime(0); });
+        player[id].on('play', function(e) { control[id].playing = true; });
+        player[id].on('pause', function(e) { control[id].playing = false; });
+        return player[id];
+    }
+
+    function WSReadFileMetadata(id,file){
         var info = file.name;
         if(window.jsmediatags){
             window.jsmediatags.read(file, {
@@ -59,6 +64,7 @@
     // slow down or speed up playback
     function changeSpeed(id,speedDown){
         const step = 0.01;
+
         var currentRate = player[id].playbackRate; 
         if(speedDown){ //Decrement
             currentRate = currentRate - step;

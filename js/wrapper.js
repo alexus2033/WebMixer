@@ -94,7 +94,6 @@ class Wrapper {
     }
 
     get playing() {
-        console.log(this.#playing);
         return this.#playing;
     }
 
@@ -114,7 +113,40 @@ class Wrapper {
         }
     }
 
+    load(mediaEntry, autoplay=false) {
+        if(mediaEntry.startsWith("file/")){
+            var x = mediaEntry.substring(5);
+            this.loadFile(fileStore[x-1], autoplay);
+        } else if (mediaEntry.startsWith("audius/")){
+            this.loadAudius(mediaEntry, autoplay);
+        } else {     // Soundcloud
+            const [trackURL, settings] = SCGetTrackURL(mediaEntry,autoplay);
+            this.loadSCTrack(trackURL,settings);
+        }
+        if(autoplay==true) this.player.play();
+    }
+
+    loadFile(file) {
+        this.displaySCPlayer(false);
+        this.url = file.name;
+        const src = URL.createObjectURL(file);
+        this.player.load(src);
+        WSReadFileMetadata(this.id,file);
+    }
+
+    async loadAudius(trackURL){
+        this.displaySCPlayer(false);
+        var url = AudiusStreamURL(trackURL),
+            song = new Audio(url);
+        this.player.load(song);
+        var meta = await AudiusReadMetadata(trackURL);
+        this.duration = meta.duration;
+        playerInfo[this.id].innerText = meta.title;
+        extraInfo[this.id].innerText = meta.genre;
+    }
+
     loadSCTrack(trackURL,settings) {
+        this.displaySCPlayer(true);
         this.url = trackURL;
         if(!this.widget){
             SCPlayerCreate(this.id,trackURL);
@@ -123,34 +155,24 @@ class Wrapper {
         }
     }
 
-    async load(mediaEntry, autoplay) {
-        this.player.setWaveColor('#3B8686');
-        if(mediaEntry.startsWith("file/")){
-            var x = mediaEntry.substring(5);
-            this.loadFile(fileStore[x-1], autoplay);
-        } else if (mediaEntry.startsWith("audius/")){
-            var url = AudiusStreamURL(mediaEntry),
-                song = new Audio(url);
-            this.player.load(song);
-            var meta = await AudiusReadMetadata(mediaEntry);
-            this.duration = meta.duration;
-            playerInfo[this.id].innerText = meta.title;
-            extraInfo[this.id].innerText = meta.genre;
-        } else { //Soundcloud
-            loadSCTrackID(mediaEntry, autoplay);
+    displaySCPlayer(showSC){
+        const wave = this.player.container.querySelector("wave");
+        if(showSC == true){
+            this.player.stop();
+            this.player.destroy();
+            deck[this.id].innerText = "";
+        } else {
+            if(this.player.isDestroyed){
+                this.player =  WScreatePlayer(deck[this.id],this.id);
+            }
+            this.player.setWaveColor('#3B8686');
+            if(this.widget){
+                this.widget = null;
+                SCPlayerKillEvents(this.id);
+            }
         }
-    }
-
-    loadFile(file, autoplay) {
-        if(this.widget){
-            this.widget = null;
-            SCPlayerKillEvents(this.id);
-        }
-        this.url = file.name;
-        const src = URL.createObjectURL(file);
-        this.player.load(src);
-        if(autoplay==true) this.player.play();
-        WSupdateMetadata(this.id,file);
+        playerInfo[this.id].innerText = "";
+        extraInfo[this.id].innerText = "";
     }
 
     play() {
