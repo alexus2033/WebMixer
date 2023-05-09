@@ -135,19 +135,16 @@ async function addSomethingNew(type,something){
     if(type == "SC"){
         var meta = SCextractTitle(something),
             title = (meta ? meta : newUrl),
-            track = newUrl.replace("tracks/","SC/"),
-            user = "", //completed later
-            cover = "";
+            track = newUrl.replace("tracks/","SC/");
+            writeTitle(track,title);
     } else {
         var url = AudiusAddress + "/v1/" + newUrl,
           meta = await AudiusReadMetadata(url),
           title = (meta ? meta.title : newUrl),
-          user = (meta.user.name ? meta.user.name : ""),
-          cover = (meta.artwork['480x480'] ? meta.artwork['480x480'] : ""),
           track = newUrl.replace("tracks/","audius/");
+          AudiusSaveMetadata(url,meta);
     }
 
-    writeTitle(track,title,user,cover,genre);
     addListEntry(title,track,true);
     return true;
 }

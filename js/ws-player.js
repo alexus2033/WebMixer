@@ -80,7 +80,8 @@
     }
 
     function displayTime(id){
-        var remain = player[id].getDuration() - player[id].getCurrentTime();
+        var curPos = player[id].getCurrentTime();
+        var remain = player[id].getDuration() - curPos;
         var mins = parseInt((remain/60)%60),
             secs = parseInt(remain%60),
             millis = remain.toFixed(2).slice(-2,-1);
@@ -90,6 +91,9 @@
         if(prevSecs != secs){
             sendShortMsg([0x94+id, 0x15, secs]);
             prevSecs = secs;
+            if(curPos > playedSecs){
+                control[id].markPlayed = true;
+            }
         }
         if(prevMins != mins){
             sendShortMsg([0x94+id, 0x14, mins]);

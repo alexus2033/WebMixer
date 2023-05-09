@@ -1,5 +1,6 @@
 const msgEOM = 0x3a;
 const playLED = 0x01;
+const playedSecs = 15;
 
 function availableDeck(){
     var nextDeck = 0;
@@ -12,6 +13,7 @@ function availableDeck(){
 class Wrapper {
     #eom;
     #active;
+    #played;
     #playing;
 
     constructor(id, newPlayer) {
@@ -19,6 +21,7 @@ class Wrapper {
         this.player = newPlayer;
         this.duration = 0;
         this.#eom = false;
+        this.#played = false;
         this.#playing = false;
         this.#active = false;
         this.widget = null;
@@ -48,6 +51,24 @@ class Wrapper {
             return false;
         
         return !this.player.paused;
+    }
+
+    /**
+     * @param {boolean} newState
+     */
+    set markPlayed(newState) {
+        if(newState == this.#played)
+            return; //nothing changed
+        
+        this.#played = newState;
+        const listEntry = $("#fileList option[value='"+ this.url +"']");
+        if(listEntry){
+            listEntry.css('background-color', 'lightgrey');
+        }
+    }
+
+    get markPlayed() {
+        return this.#played;
     }
 
     /**
@@ -86,10 +107,10 @@ class Wrapper {
         this.#playing = newState;
         if(newState == true){
             sendShortMsg([0x90,playLED+this.id,0x7f]);
-            $(".playstop")[this.id].value = "Stop ";
+            $(".playstop")[this.id].value = " Stop ";
         } else {
             sendShortMsg([0x90,playLED+this.id,0x01]);
-            $(".playstop")[this.id].value = "Play ";
+            $(".playstop")[this.id].value = " Play ";
         }
     }
 
@@ -114,6 +135,8 @@ class Wrapper {
     }
 
     load(mediaEntry, autoplay=false) {
+        this.url = mediaEntry;
+        this.#played = false;
         if(mediaEntry.startsWith("file/")){
             var x = mediaEntry.substring(5);
             this.loadFile(fileStore[x-1], autoplay);
@@ -128,7 +151,6 @@ class Wrapper {
 
     loadFile(file) {
         this.displaySCPlayer(false);
-        this.url = file.name;
         const src = URL.createObjectURL(file);
         this.player.load(src);
         WSReadFileMetadata(this.id,file);
@@ -153,7 +175,6 @@ class Wrapper {
 
     loadSCTrack(trackURL,settings) {
         this.displaySCPlayer(true);
-        this.url = trackURL;
         if(!this.widget){
             SCPlayerCreate(this.id,trackURL);
         } else {

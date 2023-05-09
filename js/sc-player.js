@@ -162,6 +162,9 @@
         if(prevSecs != secs){
             sendShortMsg([0x94+id, 0x15, secs]);
             prevSecs = secs;
+            if(SCPlayerPosition[id] > playedSecs*1000){
+                control[id].markPlayed = true;
+            }
         }
         if(prevMins != mins){
             sendShortMsg([0x94+id, 0x14, mins]);
