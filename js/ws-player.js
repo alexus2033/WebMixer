@@ -41,7 +41,6 @@
             player[id].playhead.setPlayheadTime(0); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
-        console.log(player[id]);
         return player[id];
     }
 

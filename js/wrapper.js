@@ -137,12 +137,18 @@ class Wrapper {
     async loadAudius(trackURL){
         this.displaySCPlayer(false);
         var url = AudiusStreamURL(trackURL),
-            song = new Audio(url);
+            song = new Audio(url),
+            songInfo = readTitle(trackURL);
+
         this.player.load(song);
-        var meta = await AudiusReadMetadata(trackURL);
-        this.duration = meta.duration;
-        playerInfo[this.id].innerText = meta.title;
-        extraInfo[this.id].innerText = meta.genre;
+        if(songInfo.length<4){
+            var meta = await AudiusReadMetadata(trackURL);
+            AudiusSaveMetadata(trackURL,meta);
+            this.duration = meta.duration;
+        } else {
+            playerInfo[this.id].innerText = songInfo[0];
+            extraInfo[this.id].innerText = songInfo[3];
+        }
     }
 
     loadSCTrack(trackURL,settings) {
@@ -164,7 +170,7 @@ class Wrapper {
         } else if(showSC == false) {
             if(this.widget){
                 this.widget = null;
-                SCPlayerKillEvents(this.id);
+                SCPlayerDestroy(this.id);
             }
             if(this.player.isDestroyed){
                 this.player = WScreatePlayer(deck[this.id],this.id);

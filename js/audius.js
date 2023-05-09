@@ -20,13 +20,29 @@ async function AudiusReadMetadata(url){
         method: 'GET',
         headers: headers
     })
+    .then(AudiusHandleError)
     .then(function(res) {
         return res.json();
     }).then(function(content) {
-        console.log(content.data);
         return content.data;
     });
     return result;
+}
+
+function AudiusSaveMetadata(trackURL, meta){
+    var title = (meta ? meta.title : newUrl),
+    user = (meta.user.name ? meta.user.name : ""),
+    artwork = (meta.artwork['480x480'] ? meta.artwork['480x480'] : ""),
+    genre = (meta.genre ? meta.genre : "");
+    writeTitle(trackURL,title,user,artwork,genre);
+}
+
+function AudiusHandleError(response) {
+    if (!response.ok) {
+        printInfo(response.statusText);
+        return;
+    }
+    return response;
 }
 
 function AudiusStreamURL(track){

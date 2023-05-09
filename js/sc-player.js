@@ -43,6 +43,9 @@
     }
     
     function SCGetTrackURL(trackID,autoplay = false){
+        if(trackID.startsWith("SC/")){
+            trackID = trackID.replace("SC/","tracks/");
+        }
         var target = `${SCAPI}/${trackID}`;
         settings["auto_play"] = autoplay;
         return [target, settings];
@@ -64,7 +67,7 @@
         var x, result;
         while ((x = regex.exec(bigURL))!= null) {
             if(x.length>1){
-                result = x[2];
+                result = htmlDecode(x[2]);
             }
         }
         return result;
@@ -78,7 +81,8 @@
         if(!SCid || SCid.length==0){
             return null;
         }
-        return SCid[0].substring(1).toLowerCase();
+        SCid = SCid[0].substring(1).toLowerCase();
+        return SCid.replace("tracks/","SC/");
     }
     
     function SCgetCurrentTitle(id,currentSound){
@@ -86,14 +90,15 @@
         var SCurl = SCextractID(currentSound.uri),
             title = currentSound.title,
             artwork = currentSound.artwork_url,
+            genre = currentSound.genre ? currentSound.genre : "",
             artist = meta.artist ? meta.artist : "";
         if(meta.release_title){
             title = meta.release_title;
         }
         if(SCurl){
-            writeTitle(SCurl,title,artist,artwork);
+            writeTitle(SCurl,title,artist,artwork,genre);
         }
-        extraInfo[id].innerText = currentSound.genre ? currentSound.genre : "";
+        extraInfo[id].innerText = genre;
     }
 
     function SCPlayerCreateEvents(id){    
@@ -132,14 +137,13 @@
     });
     }
 
-    function SCPlayerKillEvents(id){
+    function SCPlayerDestroy(id){
         var widgetIframe = document.getElementById(`sc-player${id}`),
             widget = SC.Widget(widgetIframe);
         if(widget){
             widget.unbind();
         }
         widgetIframe.parentElement.innerHTML = "";
-        //deck[id].innerHTML = "";
     }
 
     // Update Time-Displays

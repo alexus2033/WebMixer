@@ -10,19 +10,29 @@ function killTitle(songURL){
     }
 }
 
-function writeTitle(songURL,title,artist,cover){
+function writeTitle(songURL,title){
     if (typeof(Storage) !== "undefined" && songURL) {
         if(songURL.startsWith("/")){
             songURL = songURL.substring(1);
         }
-        const data = [title,artist,cover];
+        const data = [title,"","",""];
+        localStorage.setItem(songURL, JSON.stringify(data));    
+    }
+}
+
+function writeTitle(songURL,title,artist,cover,genre){
+    if (typeof(Storage) !== "undefined" && songURL) {
+        if(songURL.startsWith("/")){
+            songURL = songURL.substring(1);
+        }
+        const data = [title,artist,cover,genre];
         localStorage.setItem(songURL, JSON.stringify(data));    
     }
 }
 
 function displayCover(audioURL){
     img = document.getElementById("cover");
-    if(audioURL.startsWith('file')){
+    if(audioURL.startsWith('file/')){
       var x = audioURL.substring(5);
       window.jsmediatags.read(fileStore[x-1], {
           onSuccess: function(tag) {
@@ -64,7 +74,7 @@ function importCSV(file){
             const data = line.split(';'),
                 exist = localStorage.getItem(data[0]);
             if(!exist && data.length > 1){
-                writeTitle(data[0],data[1],data[2],data[3]);
+                writeTitle(data[0],data[1],data[2],data[3],data[4]);
                 if(data[2] && data[2]!=="null"){
                     addListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
@@ -80,7 +90,7 @@ function exportCSV(){
     const link = document.createElement("a");
     var content = "";
     Object.keys(localStorage).filter(function(key){
-        return key.startsWith("tracks/");
+        return !key.startsWith("file/");
     }).forEach(key => {
         content += `${key};`
         const data = JSON.parse(localStorage.getItem(key));
@@ -100,7 +110,7 @@ function readTitles(readCallback){
     if (typeof(Storage) == "undefined") return;
 
     Object.keys(localStorage).filter(function(key){
-        return key.startsWith("tracks/");
+        return !key.startsWith("file/");
     }).forEach(item => {
         const data = JSON.parse(localStorage.getItem(item));
         if(data[1]){
@@ -111,16 +121,16 @@ function readTitles(readCallback){
     });
 }
 
-async function addURL(type,something){
+async function addSomethingNew(type,something){
     if(type == "SC"){
         newUrl = SCextractID(something);
     } else {
         newUrl = AudiusExtractID(something);
     }
-    if(!newUrl) return;
+    if(!newUrl) return false;
     if(readTitle(newUrl)){
         printInfo(newUrl + " already exists");
-        return;
+        return true;
     }
     if(type == "SC"){
         var meta = SCextractTitle(something),
@@ -137,8 +147,9 @@ async function addURL(type,something){
           track = newUrl.replace("tracks/","audius/");
     }
 
-    writeTitle(track,title,user,cover);
+    writeTitle(track,title,user,cover,genre);
     addListEntry(title,track,true);
+    return true;
 }
 
 function printInfo(value){
@@ -154,6 +165,11 @@ function clearInfo(){
     if(log!=null){
         log.innerText = "";
     }
+}
+
+function htmlDecode(input){
+    let doc = new DOMParser().parseFromString(input, "text/html");
+    return doc.documentElement.textContent;
 }
 
 // format number with leading zero
