@@ -157,19 +157,19 @@ class Wrapper {
 
     displaySCPlayer(showSC){
         const wave = this.player.container.querySelector("wave");
-        if(showSC == true){
+        if(showSC == true && !this.player.isDestroyed){
             this.player.stop();
             this.player.destroy();
-            deck[this.id].innerText = "";
-        } else {
-            if(this.player.isDestroyed){
-                this.player =  WScreatePlayer(deck[this.id],this.id);
-            }
-            this.player.setWaveColor('#3B8686');
+            deck[this.id].innerHTML = "";
+        } else if(showSC == false) {
             if(this.widget){
                 this.widget = null;
                 SCPlayerKillEvents(this.id);
             }
+            if(this.player.isDestroyed){
+                this.player = WScreatePlayer(deck[this.id],this.id);
+            }
+            this.player.setWaveColor('#3B8686');
         }
         playerInfo[this.id].innerText = "";
         extraInfo[this.id].innerText = "";

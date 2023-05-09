@@ -4,7 +4,7 @@
     const playLED = 0x01;
     var control = [];
 
-    var pHead = WaveSurfer.playhead.create({
+    const pHead = WaveSurfer.playhead.create({
         returnOnPause: false,
         moveOnSeek: true,
         draw: true
@@ -41,6 +41,7 @@
             player[id].playhead.setPlayheadTime(0); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
+        console.log(player[id]);
         return player[id];
     }
 
@@ -98,6 +99,7 @@
         pos[id].innerText = `-${mins}:${secs.pad(2)}.${millis}`;
         if(remain < 21 && remain > 0){
            player[id].setWaveColor('red');
+           control[id].EOM = true;
            blinker = true;
         } else if (blinker){
            player[id].setWaveColor('#3B8686');
@@ -154,7 +156,7 @@
                 });
                 out1.onchange = e => player[0].setSinkId(out1.value);
                 out2.onchange = e => player[1].setSinkId(out2.value);
-                printInfo((out1.length > 1) ? out1.length + " Devices detected" : "1 Device detected");               
+                printInfo((out1.length > 1) ? out1.length + " Audio-Outputs detected" : "Audio-Output detected");               
                 })
             .catch(function(err) {
                 console.log(err.name + ": " + err.message);

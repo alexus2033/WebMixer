@@ -166,8 +166,6 @@
         if(remain < 21 && remain > 0 && control[id].EOM == false){
             control[id].EOM = true;
         }
-        if(mins && outputs.length == 0){
-            pos[id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
-        }
+        pos[id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
     }
 }
