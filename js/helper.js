@@ -20,12 +20,12 @@ function writeTitle(songURL,title){
     }
 }
 
-function writeTitle(songURL,title,artist,cover,genre){
+function writeTitle(songURL,title,artist,cover,genre,startPos){
     if (typeof(Storage) !== "undefined" && songURL) {
         if(songURL.startsWith("/")){
             songURL = songURL.substring(1);
         }
-        const data = [title,artist,cover,genre];
+        const data = [title,artist,cover,genre,startPos];
         localStorage.setItem(songURL, JSON.stringify(data));    
     }
 }
@@ -142,7 +142,7 @@ async function addSomethingNew(type,something){
           meta = await AudiusReadMetadata(url),
           title = (meta ? meta.title : newUrl),
           track = newUrl.replace("tracks/","audius/");
-          AudiusSaveMetadata(url,meta);
+          AudiusSaveMetadata(track,meta);
     }
 
     addListEntry(title,track,true);

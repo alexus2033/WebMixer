@@ -96,7 +96,7 @@
             title = meta.release_title;
         }
         if(SCurl){
-            writeTitle(SCurl,title,artist,artwork,genre);
+            writeTitle(SCurl,title,artist,artwork,genre,0);
         }
         extraInfo[id].innerText = genre;
     }
@@ -109,6 +109,7 @@
             console.log(`ready player ${id}`);
             widget.getDuration(function(x){
                 control[id].duration = x;
+                SCPlayerUpdateTime(id);
         });
         widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(x){
         var pos = x.currentPosition;

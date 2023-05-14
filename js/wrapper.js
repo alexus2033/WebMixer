@@ -15,6 +15,7 @@ class Wrapper {
     #active;
     #played;
     #playing;
+    #startMarker;
 
     constructor(id, newPlayer) {
         this.id = id;
@@ -119,6 +120,10 @@ class Wrapper {
         return this.#playing;
     }
 
+    get start() {
+        return this.#startMarker;
+    }
+
     setVolume(newLevel){
         if(!this.widget){
             this.player.setVolume(newLevel);
@@ -135,8 +140,15 @@ class Wrapper {
         }
     }
 
+    setStart(){
+        if(!this.widget){
+            this.#startMarker = SCPlayerPosition[this.id];
+        } else {
+            this.#startMarker = this.player.playhead.playheadTime;
+        }
+    }
+
     load(mediaEntry, autoplay=false) {
-        console.log(mediaEntry);
         this.url = mediaEntry;
         this.#played = false;
         if(mediaEntry.startsWith("file/")){

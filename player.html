@@ -3,10 +3,10 @@
    <head>
       <meta charset = "utf-8">
       <title>Alphabeat Player</title>
-      <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel = "stylesheet">
+      <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
       <!-- externals -->
       <script type= "text/javascript" src= "https://code.jquery.com/jquery-1.10.2.js"></script>
-      <script type= "text/javascript" src= "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+      <script type= "text/javascript" src= "https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
       <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js"></script>
       <script type= "text/javascript" src= "https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
       <script type= "text/javascript" src= "https://w.soundcloud.com/player/api.js"></script>
@@ -62,11 +62,12 @@
       <input type="button" onclick ="exportCSV();" value="Export" />
       <pre id="log"></pre>
       <div id = "openDiag" title = "Add new Track">
-      <label for="type">Source</label>
-         <select id="type">
-            <option value="audius"><a href="https://audius.co">Audius</a></option>
-            <option value="SC"><a href="https://soundcloud.com/">Soundcloud</a></option>
-         </select><br>
+      <fieldset id="radio">
+         <legend>Source </legend>
+         <label><input type="radio" name="radioOpt" value="audius"><a href="https://audius.co">Audius</a></label>
+         <label><input type="radio" name="radioOpt" value="SC"><a href="https://soundcloud.com/">Soundcloud</a></label>
+         <label><input type="radio" name="radioOpt" value="link">Other link</label>
+       </fieldset><br>
       <label for="url">Enter URL or Embed-Code</label>
       <input type="url" id="trackUrl" placeholder="https://discoveryprovider.audius.co/v1/tracks/" pattern="https://.*" size="35" required>
       </div>
@@ -92,12 +93,19 @@
       ($("#openDiag").dialog("isOpen") == false) ? $(
         "#openDiag").dialog("open") : $("#openDiag").dialog("close") ;
       });
+      $("#openDiag").keydown(function (event) {
+        if (event.keyCode == $.ui.keyCode.ENTER) {
+            $(this).parent().find('button:nth-child(1)').click();
+            return false;
+        }
+      });
       $("#openDiag").dialog({autoOpen: false, width: 380,
       buttons: {
          Cancel: function() {
          $(this).dialog("close");},
          Add: function() {
-         addSomethingNew($("#type").val(),$("#trackUrl").val());
+            var type=$("input[name='radioOpt']:checked").val();
+            addSomethingNew(type,$("#trackUrl").val());
          $(this).dialog("close");}
       },
       close: function() {
@@ -135,14 +143,28 @@
       } 
    },false);
 
-      window.onload = function(){
-         initMIDI();
-         initPlayers();
-         readTitles(addListEntry);
-      }
+   window.onload = function(){
+      initMIDI();
+      initPlayers();
+      readTitles(addListEntry);
+   }
 
-      fileList.ondblclick = loadSelectedEntry;
+   fileList.ondblclick = loadSelectedEntry;
 
+      // drag & drop files to list
+   fileList.addEventListener("dragenter", drag, false);
+   fileList.addEventListener("dragover", drag, false);
+   fileList.addEventListener("drop", (event) => {
+      drag(event);
+      const dt = event.dataTransfer;
+      addFiles(dt.files);
+   });
+
+   function drag(event) {
+      event.stopPropagation();
+      event.preventDefault();
+   }
+   
    function loadSelectedEntry(autoplay = false){
       const selectedIdx = fileList.selectedIndex;
       if(selectedIdx < 0) return;
