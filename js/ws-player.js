@@ -37,7 +37,8 @@
         player[id].on('waveform-ready', function(e) { displayTime(id) });
         player[id].on('audioprocess', function(e) { displayTime(id) });
         player[id].on('ready', function(e) {
-            control[id].duration = player[id].getDuration();  
+            control[id].duration = player[id].getDuration();
+            displayTime(id);  
             player[id].playhead.setPlayheadTime(0); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
@@ -49,7 +50,6 @@
         if(window.jsmediatags){
             window.jsmediatags.read(file, {
             onSuccess: function(result) {
-                console.log(result.tags);
                 if(result.tags.artist && result.tags.title){
                     info=result.tags.artist + " - " + result.tags.title;
                 }

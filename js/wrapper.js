@@ -20,6 +20,7 @@ class Wrapper {
         this.id = id;
         this.player = newPlayer;
         this.duration = 0;
+        this.url = null;
         this.#eom = false;
         this.#played = false;
         this.#playing = false;
@@ -59,7 +60,7 @@ class Wrapper {
     set markPlayed(newState) {
         if(newState == this.#played)
             return; //nothing changed
-        
+        console.log(this.url);
         this.#played = newState;
         const listEntry = $("#fileList option[value='"+ this.url +"']");
         if(listEntry){
@@ -120,7 +121,7 @@ class Wrapper {
 
     setVolume(newLevel){
         if(!this.widget){
-            this.player.volume = newLevel;
+            this.player.setVolume(newLevel);
         } else {
             this.widget.setVolume(newLevel*100);
         }
@@ -135,6 +136,7 @@ class Wrapper {
     }
 
     load(mediaEntry, autoplay=false) {
+        console.log(mediaEntry);
         this.url = mediaEntry;
         this.#played = false;
         if(mediaEntry.startsWith("file/")){
