@@ -169,6 +169,20 @@ function htmlDecode(input){
     return doc.documentElement.textContent;
 }
 
+function keepScreenAwake(){
+    if ("wakeLock" in navigator) {
+        let wakeLock = null;
+        try {
+            navigator.wakeLock.request('screen').then(lock => { 
+                console.log("Screenlock active."); 
+                screenLock = lock;
+            });
+        } catch (err) {
+            printInfo(`${err.name}, ${err.message}`);
+        }
+    }      
+}
+
 // format number with leading zero
 Number.prototype.pad = function(size) {
     var s = String(this);

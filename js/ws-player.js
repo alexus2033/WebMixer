@@ -125,16 +125,20 @@
 	}
 
     (async () => {  //permission for "speaker-selection" not supported yet
-         const query = await navigator.permissions.query( { name: "microphone" } );
-         switch( query.state ) {
-            case "prompt":
-               await queryUserMedia();
-               await listOutputDevices();
-               clearInfo();
-               break;
-            case "granted":
-               await listOutputDevices();
-         }
+        try {
+        const query = await navigator.permissions.query( { name: "microphone" } );
+            switch( query.state ) {
+                case "prompt":
+                await queryUserMedia();
+                await listOutputDevices();
+                clearInfo();
+                break;
+                case "granted":
+                await listOutputDevices();
+            }
+        } catch(e) {
+            printInfo("Speaker-selection disabled.");
+        }
 
          function queryUserMedia() {
             printInfo("prompt for permission to select audio-devices...");
