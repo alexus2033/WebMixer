@@ -228,7 +228,7 @@ class Wrapper {
         if(this.widget){
             this.widget.toggle();
         } else {
-            this.player.playPause();
+            this.player.playPause().catch((err) => { printInfo(err); });
         }
     }
 }

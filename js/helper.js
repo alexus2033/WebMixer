@@ -169,7 +169,7 @@ function htmlDecode(input){
     return doc.documentElement.textContent;
 }
 
-function keepScreenAwake(){
+(async () => {  //keep Screen Awake
     if ("wakeLock" in navigator) {
         let wakeLock = null;
         try {
@@ -181,7 +181,7 @@ function keepScreenAwake(){
             printInfo(`${err.name}, ${err.message}`);
         }
     }      
-}
+})().catch( console.error );
 
 // format number with leading zero
 Number.prototype.pad = function(size) {

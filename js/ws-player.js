@@ -65,18 +65,18 @@
     function changeSpeed(id,speedDown){
         const step = 0.01;
 
-        var currentRate = player[id].playbackRate; 
+        var currentRate = player[id].getPlaybackRate(); 
         if(speedDown){ //Decrement
             currentRate = currentRate - step;
         } else { //Increment
             currentRate = currentRate + step;
         }
         if(currentRate >= 0.5 && currentRate <= 2){
-            player[id].playbackRate = currentRate;
+            player[id].setPlaybackRate(currentRate);
         } else {
             console.log("invalid speed");
         }
-        pos[id].innerHTML = `Speed: x ${currentRate.pad(2)}`;
+        extraInfo[id].innerText = `Speed: x ${currentRate.pad(2)}`;
     }
 
     function displayTime(id){
