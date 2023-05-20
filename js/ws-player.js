@@ -10,11 +10,13 @@
         draw: true
     });
     var pOps = {
-        scrollParent: true,
         normalize: true,
-        waveColor: '#3B8686',
-        progressColor: '#A8DBA8', 
-        backend: 'MediaElement',
+        scrollParent: true,
+        autoCenterImmediately: true,
+        backgroundColor: '#f5f5f5',
+        waveColor: 'grey',
+        progressColor: 'hsla(200, 100%, 30%, 0.5)',
+        barWidth: 3,
         cursorColor : 'red',
         plugins: [ pHead ]
     };
@@ -105,7 +107,7 @@
            control[id].EOM = true;
            blinker = true;
         } else if (blinker){
-           player[id].setWaveColor('#3B8686');
+           player[id].setWaveColor(pOps.waveColor);
            blinker = false;
         }
      }
