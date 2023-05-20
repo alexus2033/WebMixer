@@ -1,123 +1,209 @@
-<!DOCTYPE html>
-<HTML>
-<HEAD>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<meta http-equiv="Content-Script-Type" content="text/javascript">
-	<meta name="Keywords" content="webMIDIAPI,Controller,Alphabeat">
-	<title>Alphabeat Player</title>
-	<script src="https://code.jquery.com/jquery-1.11.2.js"></script>
-  <script type="text/javascript" src="js/alphabeatmidiapi.js"></script>
-  <script type="text/javascript" src="js/wrapper.js"></script>
-	<script type="text/javascript" src="js/player.js"></script>
-</HEAD>
-<body>
-<table>
-  <tr>
-    <th>Deck 1</th>
-    <th></th>
-    <th>Deck 2</th>
-  </tr>
-  <tr>
-    <td><div class="info"></div><div class="pos"></div></td>
-    <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple></td>
-    <td><div class="info"></div><div class="pos"></div></td>
-  </tr>
-  <tr>
-    <td><audio controls class="player" preload="metadata"></audio></td>
-    <td><input type="button" value="Open..." onclick="document.getElementById('selector').click();" /></td>
-    <td><audio controls class="player" preload="metadata"></audio></td>
-  </tr>
-  <tr>
-    <td colspan="3">
-      <select id="fileList" Size="10" style="width: 100%;">
-      </select>  
-    </td>
-  </tr>
-</table>
-Messages:
-<pre id="log"></pre>
-<script>
-  var fileSelector = document.getElementById("selector"),
-  fileList = document.getElementById("fileList"),
-  pos = $('div[class="pos"]'),
-  info = $('div[class="info"]'),
-  player = $('audio[class="player"]'),
-  prevSecs = -1,
-  prevMins = -1,
-  fileStore = [];
+<!doctype html>
+<html lang = "en">
+   <head>
+      <meta charset = "utf-8">
+      <title>Alphabeat Player</title>
+      <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+      <!-- externals -->
+      <script type= "text/javascript" src= "https://code.jquery.com/jquery-1.10.2.js"></script>
+      <script type= "text/javascript" src= "https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js"></script>
+      <script type= "text/javascript" src= "https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+      <script type= "text/javascript" src= "https://w.soundcloud.com/player/api.js"></script>
+      <!-- plugins -->
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
+      <!-- internals-->
+      <script type= "text/javascript" src= "js/helper.js"></script>
+      <script type= "text/javascript" src= "js/alphabeatmidiapi.js"></script>
+      <script type= "text/javascript" src= "js/ws-player.js"></script>
+      <script type= "text/javascript" src= "js/sc-player.js"></script>
+      <script type= "text/javascript" src= "js/wrapper.js"></script>
+      <script type= "text/javascript" src= "js/audius.js"></script>
+   </head>
+   
+   <body>
+      <table width="100%">
+         <tr>
+            <th width="46%">Deck 1</th>
+            <th></th>
+            <th width="46%">Deck 2</th>
+          </tr>
+          <tr>
+            <td><div class="pos"></div></td>
+            <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple>
+               <input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
+            <td><div class="pos"></div></td>
+          </tr>
+          <tr>
+            <td><div class="pInfo"></div><div class="deck"></div></td>
+            <td><input type="button" id="urlOpen" value="URL..." /></td>
+            <td><div class="pInfo"></div><div class="deck"></div></td>
+         </tr>
+         <tr>
+            <td><input type="button" class="playstop" onclick ="control[0].togglePlay();" value=" Play " />
+            <select class="selectOut" id="out1" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
+            <td></td>
+            <td><input type="button" class="playstop" onclick ="control[1].togglePlay();;" value=" Play " />
+            <select class="selectOut" id="out2" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
+         </tr>
+      </table>
+      <table>
+         <tr>
+           <td>
+           <select id="fileList" Size="20" style="width: 100%;" autofocus>
+             <option value="audius/qGBBkOP">orange tales - Like that</option>
+             <option value="audius/NQzMK8x">Crying in Sunshine (feat. Arden Jones)</option>
+             <option value="audius/7PAB4A7">Sunrise Series 36</option>
+           </select>
+           </td>
+           <td width="20%"><img id="cover" style="max-width:300px;"></img></td>
+         </tr>
+      </table>
+      <input type="button" onclick ="exportCSV();" value="Export" />
+      <pre id="log"></pre>
+      <div id = "openDiag" title = "Add new Track">
+      <fieldset id="radio">
+         <legend>Source </legend>
+         <label><input type="radio" name="radioOpt" value="audius"><a href="https://audius.co">Audius</a></label>
+         <label><input type="radio" name="radioOpt" value="SC"><a href="https://soundcloud.com/">Soundcloud</a></label>
+         <label><input type="radio" name="radioOpt" value="link">Other link</label>
+       </fieldset><br>
+      <label for="url">Enter URL or Embed-Code</label>
+      <input type="url" id="trackUrl" placeholder="https://discoveryprovider.audius.co/v1/tracks/" pattern="https://.*" size="35" required>
+      </div>
+   </body>
+   <script type = "text/javascript">
+      'use strict';
+     var fileSelector = document.getElementById("selector"),
+      log = document.getElementById("log"),
+      out1 = document.getElementById("out1"),
+      out2 = document.getElementById("out2"),
+      fileList = document.getElementById("fileList"),
+      pos = $('div[class="pos"]'),
+      playerInfo = $('div[class="pInfo"]'),
+      extraInfo = $('div[class="eInfo"]'),
+      deck = $('div[class="deck"]'),
+      prevSecs = -1,
+      prevMins = -1,
+      fileStore = [],
+      player = [],
+      blinker = false;
 
-  window.onload = function(){
-	  initMIDI();
-    control[0] = new Wrapper(0);
-    control[1] = new Wrapper(1);
-  }
+      $("#urlOpen").click(function() {
+      ($("#openDiag").dialog("isOpen") == false) ? $(
+        "#openDiag").dialog("open") : $("#openDiag").dialog("close") ;
+      });
+      $("#openDiag").keydown(function (event) {
+        if (event.keyCode == $.ui.keyCode.ENTER) {
+            $(this).parent().find('button:nth-child(1)').click();
+            return false;
+        }
+      });
+      $("#openDiag").dialog({autoOpen: false, width: 380,
+      buttons: {
+         Cancel: function() {
+         $(this).dialog("close");},
+         Add: function() {
+            var type=$("input[name='radioOpt']:checked").val();
+            addSomethingNew(type,$("#trackUrl").val());
+         $(this).dialog("close");}
+      },
+      close: function() {
+         document.getElementById("trackUrl").value = "";
+         fileList.focus();
+      }});
 
-  window.onbeforeunload = function(){
-    killPlayer();
-  };
+      fileList.addEventListener("change", listChanged); //not triggered via MIDI
+      fileList.addEventListener("keyup", (event) => {
+         const selectedIdx = fileList.selectedIndex; 
+         if(event.repeat || selectedIdx < 0)
+         return;
 
-  fileList.ondblclick = function(){
-    if(this.selectedIndex >=0){
-      loadLocalFile(fileStore[this.selectedIndex]);
-    }
-  };
+      switch (event.key) {
+         case "Enter":
+         loadSelectedEntry();
+         break;
+         case " ": //Space-Key
+         var id = loadSelectedEntry(true);
+         break;  
+         case "Del":
+         case "Delete":
+         var audioElement = fileList.options[selectedIdx].value;
+         if(audioElement.startsWith('file')){
+            var x = audioElement.substring(5);
+            fileStore.splice(x-1, 1);
+         } else {
+            killTitle(audioElement);
+         }
+         fileList.remove(selectedIdx);
+         break;
+         default:
+         // printInfo(`Key "${event.key}" pressed [event: keydown]`);
+         return;
+      } 
+   },false);
 
-  fileList.addEventListener("keyup", (event) => {
-    const selectedIdx = fileList.selectedIndex; 
-    if(event.repeat || selectedIdx < 0)
-      return;
+   window.onload = function(){
+      initMIDI();
+      initPlayers();
+      readTitles(addListEntry);
+   }
 
-    switch (event.key) {
-      case "Enter":
-        loadTitle(fileStore[selectedIdx]);
-      break;
-      case " ": //Space-Key
-        var id = loadTitle(fileStore[selectedIdx]);
-        player[id].play();
-      break;  
-      case "Del":
-      case "Delete":
-        fileStore.splice(selectedIdx, 1);
-        fileList.remove(selectedIdx);
-      break;
-      default:
-        // printInfo(`Key "${event.key}" pressed [event: keydown]`);
-      return;
-    } 
-  },false);
+   fileList.ondblclick = loadSelectedEntry;
 
-  // drag & drop files to list
-  fileList.addEventListener("dragenter", drag, false);
-  fileList.addEventListener("dragover", drag, false);
-  fileList.addEventListener("drop", (event) => {
-    drag(event);
-    const dt = event.dataTransfer;
-    addFiles(dt.files);
-  });
+      // drag & drop files to list
+   fileList.addEventListener("dragenter", drag, false);
+   fileList.addEventListener("dragover", drag, false);
+   fileList.addEventListener("drop", (event) => {
+      drag(event);
+      const dt = event.dataTransfer;
+      addFiles(dt.files);
+   });
 
-  function drag(event) {
-    event.stopPropagation();
-    event.preventDefault();
+   function drag(event) {
+      event.stopPropagation();
+      event.preventDefault();
+   }
+   
+   function loadSelectedEntry(autoplay = false){
+      const selectedIdx = fileList.selectedIndex;
+      if(selectedIdx < 0) return;
+      var id = availableDeck(),
+         audioElement = fileList.options[selectedIdx].value;
+      control[id].load(audioElement, autoplay);
+   }
+
+   function listChanged(){
+	   const selectedIdx = fileList.selectedIndex;
+		if(selectedIdx > -1){
+			  displayCover(fileList.options[selectedIdx].value);
+		}
+	}
+
+   function addListEntry(title,url,top=false){
+      var option = document.createElement("option");
+      option.text = title;
+      option.value = url;
+      fileList.add(option,(top==true)? 0 : null);
   }
 
   function addFiles(files){
-    var count = fileStore.push.apply(fileStore,files);
-    printInfo(`${files.length} files added`);
     Array.from(files).forEach(item => {
-      var option = document.createElement("option");
-      option.text = item.name;
-      fileList.add(option); 
+      if(item.name.endsWith(".csv")){
+        importCSV(item);
+      } else {
+        var x = fileStore.push(item);
+        addListEntry(item.name,'file/' + x,true);
+      }
     });
+    fileList.focus();
   }
 
-// New File selected
-fileSelector.addEventListener('change', (event) => {
+   // New File selected
+   fileSelector.addEventListener('change', (event) => {
   if(fileSelector.files.length > 0){
     addFiles(fileSelector.files);
   }
 });
-
-createPlayerEvents();
-
 </script>
-</body>
+</html>

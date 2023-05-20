@@ -57,21 +57,6 @@
 		}
 	}
 
-	function printInfo(value){
-		if(log!=null){
-			value += "\n";
-			log.innerText += value;
-		} else {
-			console.log(value);
-		}
-	}
-
-	function clearInfo(){
-		if(log!=null){
-			log.innerText = "";
-		}
-	}
-
 	function failure(msg)
 	{
 		printInfo(`Failed to get MIDI access - ${msg}`);

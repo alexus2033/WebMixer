@@ -1,17 +1,19 @@
-# Alphabeat Web Player/Mixer with Soundcloud-Integration
+# Alphabeat Web Player/Mixer with Soundcloud/Audius-Integration
 
 ## Features
-* Start [here](https://alexus2033.github.io/WebMixer/cloudplayer.html) without Installation
+* Start [here](https://alexus2033.github.io/WebMixer/player.html) without Installation
 * Slim Web-Interface for all modern Browsers
 * No Account/Login needed
-* 2 Decks for Soundcloud-Tracks or local Sound-Files
+* 2 Decks for Soundcloud, Audius-Tracks or local Sound-Files
 * Fast Track-Selector
 * End-of-Track Indicator
 * Speed-Control for local files
+* Select Audio Output-Devices for each Deck
 * Playlist Import/Export
 
 ## Used Libraries
 * [jQuery](https://jquery.com)
+* [Wavesurfer](https://wavesurfer-js.org)
 * [Soundcloud Widgets](https://developers.soundcloud.com/docs/api/html5-widget)
 * [Web MIDI API](https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API)
 * [jsMediatags](https://github.com/aadsm/jsmediatags)
