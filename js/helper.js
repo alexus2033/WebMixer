@@ -18,6 +18,11 @@ function writeTitle(songURL,title){
         const data = [title,"","",""];
         localStorage.setItem(songURL, JSON.stringify(data));    
     }
+    //remove old metadata
+    if (songURL.startsWith("SC/")){ 
+        const oldTitle = songURL.replace("SC/","tracks/");
+        killTitle(oldTitle);
+    }
 }
 
 function writeTitle(songURL,title,artist,cover,genre,startPos){
