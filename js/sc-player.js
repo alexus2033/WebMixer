@@ -171,9 +171,11 @@
             sendShortMsg([0x94+id, 0x14, mins]);
             prevMins = mins;
         }
-        if(remain < 21 && remain > 0 && control[id].EOM == false){
-            control[id].EOM = true;
+        if(control[id].playing){
+            if(remain < 21 && remain > 0 && control[id].EOM == false){
+                control[id].EOM = true;
+            }
+            pos[id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
         }
-        pos[id].innerHTML = `-${mins}:${secs.pad(2)}.${millis}`;
     }
 }
