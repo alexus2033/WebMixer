@@ -4,6 +4,7 @@
       <meta charset = "utf-8">
       <title>Alphabeat Player</title>
       <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+      <link rel="stylesheet" href="css/main.css">
       <!-- externals -->
       <script type= "text/javascript" src= "https://code.jquery.com/jquery-1.10.2.js"></script>
       <script type= "text/javascript" src= "https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
@@ -15,18 +16,18 @@
       <!-- internals-->
       <script type= "text/javascript" src= "js/helper.js"></script>
       <script type= "text/javascript" src= "js/alphabeatmidiapi.js"></script>
+      <script type= "text/javascript" src= "js/wrapper.js"></script>
       <script type= "text/javascript" src= "js/ws-player.js"></script>
       <script type= "text/javascript" src= "js/sc-player.js"></script>
-      <script type= "text/javascript" src= "js/wrapper.js"></script>
       <script type= "text/javascript" src= "js/audius.js"></script>
    </head>
    
    <body>
       <table width="100%">
          <tr>
-            <th width="46%">Deck 1</th>
+            <th width="47%">Deck 1</th>
             <th></th>
-            <th width="46%">Deck 2</th>
+            <th width="47%">Deck 2</th>
           </tr>
           <tr>
             <td><div class="pos"></div></td>
@@ -42,7 +43,7 @@
          <tr>
             <td><input type="button" class="playstop" onclick ="control[0].togglePlay();" value=" Play " />
             <select class="selectOut" id="out1" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
-            <td></td>
+            <td><input type="checkbox" id="autoPlay" />Auto-Play</td>
             <td><input type="button" class="playstop" onclick ="control[1].togglePlay();;" value=" Play " />
             <select class="selectOut" id="out2" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
          </tr>

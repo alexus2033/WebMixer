@@ -132,8 +132,8 @@
             }       
         });
         widget.bind(SC.Widget.Events.FINISH, function() {
-            console.log("Finito!");
             control[id].active = false;
+            autoPlayer(id);
         });
     });
     }

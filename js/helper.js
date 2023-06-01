@@ -169,6 +169,11 @@ function clearInfo(){
     }
 }
 
+function killTouch(){
+    document.addEventListener('touchstart', function(e) {e.preventDefault()}, false);
+    document.addEventListener('touchmove', function(e) {e.preventDefault()}, false);
+}
+
 function htmlDecode(input){
     let doc = new DOMParser().parseFromString(input, "text/html");
     return doc.documentElement.textContent;

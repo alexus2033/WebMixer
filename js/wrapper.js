@@ -10,6 +10,16 @@ function availableDeck(){
     return nextDeck;
 }
 
+function autoPlayer(id){
+    var nextDeck = (id == 0) ? 1 : 0,
+        checkBox = document.getElementById("autoPlay");
+    if (checkBox.checked == true){
+        if(!control[nextDeck].markPlayed && control[nextDeck].playing == false){
+            control[nextDeck].play();
+        }
+    }
+}
+
 class Wrapper {
     #eom;
     #active;
@@ -61,7 +71,7 @@ class Wrapper {
     set markPlayed(newState) {
         if(newState == this.#played)
             return; //nothing changed
-        console.log(this.url);
+        console.log("markPlayed: "+this.url);
         this.#played = newState;
         const listEntry = $("#fileList option[value='"+ this.url +"']");
         if(listEntry){
@@ -79,7 +89,7 @@ class Wrapper {
     set EOM(newState) {
         if(newState == this.#eom)
             return; //nothing changed
-
+            
         this.#eom = newState;
         if(newState == true){
             sendShortMsg([0x90,msgEOM+this.id,0x7f]);
@@ -87,7 +97,6 @@ class Wrapper {
                 SCgetPlaylist(this.widget,this.id); //reload playlist
             }
         } else {
-            console.log("set EOM off");
             sendShortMsg([0x90,msgEOM+this.id,0x01]);
         }
     }
@@ -228,7 +237,11 @@ class Wrapper {
         if(this.widget){
             this.widget.toggle();
         } else {
-            this.player.playPause().catch((err) => { printInfo(err); });
+            try {
+                this.player.playPause();
+            } catch (err) {
+                printInfo(err);
+            }
         }
     }
 }

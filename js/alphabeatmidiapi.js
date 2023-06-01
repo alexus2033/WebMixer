@@ -144,6 +144,14 @@
 					changeSpeed((event.data[1] == 0x21 ? 0 : 1),false);
 				}
 			}
+			if(event.data[1] == 0x22 || event.data[1] == 0x2c){
+				if(event.data[2] == 0x3f){ //Decrement
+					changeHFilter((event.data[1] == 0x21 ? 0 : 1),true);
+				}
+				if(event.data[2] == 0x41){ //Increment
+					changeHFilter((event.data[1] == 0x21 ? 0 : 1),false);
+				}
+			}
 		}
 	}
 

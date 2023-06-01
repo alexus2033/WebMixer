@@ -44,6 +44,10 @@
             player[id].playhead.setPlayheadTime(0); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
+        player[id].on('finish', function(e) { 
+            control[id].active = false;
+            autoPlayer(id);
+        });
         return player[id];
     }
 
