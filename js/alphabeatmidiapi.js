@@ -102,10 +102,10 @@
 				control[1].togglePlay();
 			}
 			if(event.data[1] == 0x37){
-				control[0].setPosition(0);
+				control[0].movePosition(0);
 			}
 			if(event.data[1] == 0x38){
-				control[1].setPosition(0);
+				control[1].movePosition(0);
 			}
 			return;
 		}
@@ -146,10 +146,10 @@
 			}
 			if(event.data[1] == 0x22 || event.data[1] == 0x2c){
 				if(event.data[2] == 0x3f){ //Decrement
-					changeHFilter((event.data[1] == 0x21 ? 0 : 1),true);
+					changeFrequency((event.data[1] == 0x21 ? 0 : 1),true);
 				}
 				if(event.data[2] == 0x41){ //Increment
-					changeHFilter((event.data[1] == 0x21 ? 0 : 1),false);
+					changeFrequency((event.data[1] == 0x21 ? 0 : 1),false);
 				}
 			}
 		}

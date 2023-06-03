@@ -108,14 +108,14 @@
         widget.bind(SC.Widget.Events.READY, function() {
             console.log(`ready player ${id}`);
             widget.getDuration(function(x){
-                control[id].duration = x;
-                SCPlayerUpdateTime(id);
+                control[id].duration = x/1000;
+                control[id].position = SCPlayerPosition[id]/1000;
         });
         widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(x){
         var pos = x.currentPosition;
         if(SCPlayerPosition[id] != pos){
             SCPlayerPosition[id]=pos;
-            SCPlayerUpdateTime(id);
+            control[id].position = pos/1000;
         }
         });
         widget.bind(SC.Widget.Events.PAUSE, function() {
@@ -124,7 +124,7 @@
         widget.bind(SC.Widget.Events.PLAY, function() {
             control[id].playing = true;
             widget.getCurrentSound(function(currentSound) {
-                control[id].duration = currentSound.duration;
+                control[id].duration = currentSound.duration/1000;
                 SCgetCurrentTitle(id,currentSound);         
             });
             if(control[id].url.startsWith("users/")){
@@ -132,8 +132,9 @@
             }       
         });
         widget.bind(SC.Widget.Events.FINISH, function() {
-            control[id].active = false;
-            autoPlayer(id);
+            control[id].playing = false;
+            autoLoader(id);
+            console.log("pl",control[id].playing);
         });
     });
     }
@@ -145,12 +146,5 @@
             widget.unbind();
         }
         widgetIframe.parentElement.innerHTML = "";
-    }
-
-    function SCPlayerUpdateTime(id){
-
-        var remain = control[id].duration - SCPlayerPosition[id];
-        control[id].remain=remain/1000;
-        
     }
 }

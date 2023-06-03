@@ -1,6 +1,7 @@
 const msgEOM = 0x3a;
 const playLED = 0x01;
 const playedSecs = 15;
+const startSecs = 4;
 
 function availableDeck(){
     var nextDeck = 0;
@@ -10,11 +11,24 @@ function availableDeck(){
     return nextDeck;
 }
 
+function autoLoader(id){
+    var checkBox = document.getElementById("autoLoad"),
+        selectedIdx = fileList.selectedIndex;
+    if (checkBox.checked == true && selectedIdx >=0 && control[id].playing == false){
+        console.log("autoLoader",selectedIdx);
+        audioElement = fileList.options[selectedIdx].value;
+        control[id].load(audioElement);
+        fileList.selectedIndex = selectedIdx+1; 
+    }
+}
+
 function autoPlayer(id){
     var nextDeck = (id == 0) ? 1 : 0,
         checkBox = document.getElementById("autoPlay");
     if (checkBox.checked == true){
+        console.log("autoPlayer",control[nextDeck].playing);
         if(!control[nextDeck].markPlayed && control[nextDeck].playing == false){
+            console.log("autoPlayer","PLAY!");
             control[nextDeck].play();
         }
     }
@@ -26,6 +40,7 @@ class Wrapper {
     #played;
     #playing;
     #startMarker;
+    #position;
     #prev;
     #pos;
     #remain;
@@ -42,8 +57,8 @@ class Wrapper {
         this.#active = false;
         this.widget = null;
         this.tme = new makeStruct("millis, sec, mins, hours");
-        this.#prev = new this.tme(0,0,0,0);
         this.#pos = new this.tme(0,0,0,0);
+        this.#prev = new this.tme(0,0,0,0);
     }
 
     /**
@@ -56,9 +71,9 @@ class Wrapper {
      */
     set active(newState) {
         this.#active = newState;
+        this.playing = false;
         if(newState == false){
             this.EOM = false; //stop blinker
-            this.playing = false;
         }
     }
 
@@ -75,19 +90,25 @@ class Wrapper {
     /**
      * @param {int} newValue
      */
-    set remain(newValue){
-        this.#remain = newValue;
+    set position(newValue){
+        var updateDisp = false;
+        this.#position = newValue;
+        this.#remain = this.duration - newValue;
         this.#pos.mins = parseInt((this.#remain/60)%60);
         this.#pos.secs = parseInt(this.#remain%60);
         this.#pos.millis = newValue.toFixed(2).slice(-2,-1);
         if(this.#prev.millis != this.#pos.millis){
             sendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
             this.#prev.millis = this.#pos.millis;
+            updateDisp = true;
         }
         if(this.#prev.secs != this.#pos.secs){
             sendShortMsg([0x94+this.id, 0x15, this.#pos.secs]);
             this.#prev.secs = this.#pos.secs;
-            if(this.position > playedSecs*1000){
+            if(this.#remain > 0 && this.#remain < startSecs){
+                autoPlayer(this.id);
+            }
+            if(this.position > playedSecs){
                 this.markPlayed = true;
             }
         }
@@ -98,11 +119,12 @@ class Wrapper {
         if(this.playing && this.#remain < 21 && this.#remain > 0 && this.EOM == false){
             this.EOM = true;
         }
-        //update Time Display
-        posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
+        if(updateDisp){ //update Time Display
+            posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
+        }
     }
-    get remain(){
-        return this.#remain;
+    get position(){
+        return this.#position;
     }
 
     /**
@@ -149,12 +171,14 @@ class Wrapper {
      * @param {boolean} newState
      */
     set playing(newState) {
+        console.log("playing1",this.id,newState);
         if(newState == false){
             this.EOM = false; //stop blinker
         }
+        console.log("playing2",this.id,newState);
         if(newState == this.#playing)
             return; //nothing changed
-
+        console.log("playing3",this.id,newState);
         this.#playing = newState;
         if(newState == true){
             sendShortMsg([0x90,playLED+this.id,0x7f]);
@@ -181,7 +205,7 @@ class Wrapper {
         }
     }
 
-    setPosition(newPos){
+    movePosition(newPos){
         if(!this.widget){
             this.player.seekTo(newPos);
         } else {

@@ -8,11 +8,11 @@
       <!-- externals -->
       <script type= "text/javascript" src= "https://code.jquery.com/jquery-1.10.2.js"></script>
       <script type= "text/javascript" src= "https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js"></script>
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js@6.6.3/dist/wavesurfer.min.js"></script>
       <script type= "text/javascript" src= "https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
       <script type= "text/javascript" src= "https://w.soundcloud.com/player/api.js"></script>
       <!-- plugins -->
-      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js@6.6.3/dist/plugin/wavesurfer.playhead.min.js"></script>
       <!-- internals-->
       <script type= "text/javascript" src= "js/helper.js"></script>
       <script type= "text/javascript" src= "js/alphabeatmidiapi.js"></script>
@@ -37,13 +37,20 @@
           </tr>
           <tr>
             <td><div class="pInfo"></div><div class="deck"></div></td>
-            <td><input type="button" id="urlOpen" value="URL..." /></td>
+            <td rowspan="2">
+               <input type="button" id="urlOpen" value="URL..." />
+               <fieldset id="huhu">
+                  <legend>Auto</legend>
+                  <label for="autoPlay">Play</label>
+                  <input type="checkbox" id="autoPlay">
+                  <label for="autoLoad">Load</label>
+                  <input type="checkbox" id="autoLoad">
+                </fieldset></td>
             <td><div class="pInfo"></div><div class="deck"></div></td>
          </tr>
          <tr>
             <td><input type="button" class="playstop" onclick ="control[0].togglePlay();" value=" Play " />
             <select class="selectOut" id="out1" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
-            <td><input type="checkbox" id="autoPlay" />Auto-Play</td>
             <td><input type="button" class="playstop" onclick ="control[1].togglePlay();;" value=" Play " />
             <select class="selectOut" id="out2" style="display: none;"></select><div class="eInfo" style="float: right;"></div></td>
          </tr>

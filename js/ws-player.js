@@ -44,9 +44,9 @@
             player[id].playhead.setPlayheadTime(0); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
-        player[id].on('finish', function(e) { 
-            control[id].active = false;
-            autoPlayer(id);
+        player[id].on('finish', function(e) {
+            control[id].playing = false; 
+            autoLoader(id);
         });
         return player[id];
     }
@@ -88,10 +88,9 @@
     function displayTime(id){
         var curPos = player[id].getCurrentTime(),
             remain = player[id].getDuration() - curPos;
-        control[id].remain = remain;
+        control[id].position = curPos;
         if(remain < 21 && remain > 0){
            player[id].setWaveColor('red');
-           control[id].EOM = true;
            blinker = true;
         } else if (blinker){
            player[id].setWaveColor(pOps.waveColor);
