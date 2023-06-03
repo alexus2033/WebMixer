@@ -26,17 +26,24 @@ class Wrapper {
     #played;
     #playing;
     #startMarker;
+    #prev;
+    #pos;
+    #remain;
 
     constructor(id, newPlayer) {
         this.id = id;
         this.player = newPlayer;
         this.duration = 0;
         this.url = null;
+        this.#remain = 0;
         this.#eom = false;
         this.#played = false;
         this.#playing = false;
         this.#active = false;
         this.widget = null;
+        this.tme = new makeStruct("millis, sec, mins, hours");
+        this.#prev = new this.tme(0,0,0,0);
+        this.#pos = new this.tme(0,0,0,0);
     }
 
     /**
@@ -63,6 +70,39 @@ class Wrapper {
             return false;
         
         return !this.player.paused;
+    }
+
+    /**
+     * @param {int} newValue
+     */
+    set remain(newValue){
+        this.#remain = newValue;
+        this.#pos.mins = parseInt((this.#remain/60)%60);
+        this.#pos.secs = parseInt(this.#remain%60);
+        this.#pos.millis = newValue.toFixed(2).slice(-2,-1);
+        if(this.#prev.millis != this.#pos.millis){
+            sendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
+            this.#prev.millis = this.#pos.millis;
+        }
+        if(this.#prev.secs != this.#pos.secs){
+            sendShortMsg([0x94+this.id, 0x15, this.#pos.secs]);
+            this.#prev.secs = this.#pos.secs;
+            if(this.position > playedSecs*1000){
+                this.markPlayed = true;
+            }
+        }
+        if(this.#prev.mins != this.#pos.mins){
+            sendShortMsg([0x94+this.id, 0x14, this.#pos.mins]);
+            this.#prev.mins = this.#pos.mins
+        }
+        if(this.playing && this.#remain < 21 && this.#remain > 0 && this.EOM == false){
+            this.EOM = true;
+        }
+        //update Time Display
+        posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
+    }
+    get remain(){
+        return this.#remain;
     }
 
     /**

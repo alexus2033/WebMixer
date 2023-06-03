@@ -179,6 +179,18 @@ function htmlDecode(input){
     return doc.documentElement.textContent;
 }
 
+function makeStruct(keys) {
+    if (!keys) return null;
+    const k = keys.split(', ');
+    const count = k.length;
+  
+    /** @constructor */
+    function constructor() {
+      for (let x = 0; x < count; x++) this[k[x]] = arguments[x];
+    }
+    return constructor;
+}
+
 (async () => {  //keep Screen Awake
     if ("wakeLock" in navigator) {
         let wakeLock = null;
