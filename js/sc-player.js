@@ -121,8 +121,9 @@
         widget.bind(SC.Widget.Events.PAUSE, function() {
             control[id].playing = false;
         });    
-        widget.bind(SC.Widget.Events.PLAY, function() {
-            control[id].playing = true;
+        //BUG: this will be triggered after finished-event :-(
+        widget.bind(SC.Widget.Events.PLAY, function(x) {
+            control[id].playing = true; 
             widget.getCurrentSound(function(currentSound) {
                 control[id].duration = currentSound.duration/1000;
                 SCgetCurrentTitle(id,currentSound);         
@@ -132,9 +133,9 @@
             }       
         });
         widget.bind(SC.Widget.Events.FINISH, function() {
+            console.log(`finish player ${id}`);
             control[id].playing = false;
             autoLoader(id);
-            console.log("pl",control[id].playing);
         });
     });
     }

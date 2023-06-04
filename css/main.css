@@ -8,6 +8,10 @@ body {
     margin-bottom: 8px;
 }
 
-#huhu {
+#autobox {
     bottom: 0;
+}
+
+.played {
+    background-color: lightgrey;
 }

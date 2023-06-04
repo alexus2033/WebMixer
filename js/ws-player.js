@@ -1,7 +1,5 @@
 // Wavesurfer player script V0.8
 {
-    const msgEOM = 0x3a;
-    const playLED = 0x01;
     var control = [];
 
     const pHead = WaveSurfer.playhead.create({
@@ -104,7 +102,6 @@
 		if(player){
             player.toArray().forEach(function (item, id) {
                 item.stop();
-                sendShortMsg([0x90,msgEOM+id,0x01]);
                 sendShortMsg([0x94+id, 0x16, 0x00]);
                 sendShortMsg([0x94+id, 0x15, 0x00]);
                 sendShortMsg([0x94+id, 0x14, 0x00]);

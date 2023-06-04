@@ -39,12 +39,12 @@
             <td><div class="pInfo"></div><div class="deck"></div></td>
             <td rowspan="2">
                <input type="button" id="urlOpen" value="URL..." />
-               <fieldset id="huhu">
+               <fieldset id="autobox">
                   <legend>Auto</legend>
                   <label for="autoPlay">Play</label>
                   <input type="checkbox" id="autoPlay">
                   <label for="autoLoad">Load</label>
-                  <input type="checkbox" id="autoLoad">
+                  <input type="checkbox" id="autoLoad" onclick ="initAutoLoader();">
                 </fieldset></td>
             <td><div class="pInfo"></div><div class="deck"></div></td>
          </tr>
@@ -190,7 +190,13 @@
       var option = document.createElement("option");
       option.text = title;
       option.value = url;
-      fileList.add(option,(top==true)? 0 : null);
+      if(top){
+         fileList.add(option,0);
+         fileList.selectedIndex = 0;
+         $('#fileList').scrollTop(0);
+      } else {
+         fileList.add(option);
+      }
   }
 
   function addFiles(files){

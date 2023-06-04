@@ -5,29 +5,46 @@ const startSecs = 4;
 
 function availableDeck(){
     var nextDeck = 0;
-    if(control[0].playing == true || (control[0].duration > 0 && control[1].duration == 0)){
+    if(control[0].playing == true || (control[0].duration > 0 && control[1].url == null)){
         nextDeck = 1;
     }
     return nextDeck;
 }
 
+function initAutoLoader(){
+    var nextDeck = availableDeck();
+    autoLoader(nextDeck);
+    if(nextDeck == 0 && control[1].url == null){
+        autoLoader(1); //load empty deck
+    }
+}
+
 function autoLoader(id){
     var checkBox = document.getElementById("autoLoad"),
         selectedIdx = fileList.selectedIndex;
-    if (checkBox.checked == true && selectedIdx >=0 && control[id].playing == false){
-        console.log("autoLoader",selectedIdx);
-        audioElement = fileList.options[selectedIdx].value;
-        control[id].load(audioElement);
-        fileList.selectedIndex = selectedIdx+1; 
+    if (checkBox.checked == true && selectedIdx >=0){
+        var audioItem = fileList.options[selectedIdx].value;
+        if(control[0].url === audioItem ||
+           control[1].url === audioItem){ //move to next entry
+            audioItem = fileList.options[selectedIdx+1].value;
+            fileList.selectedIndex = selectedIdx+1;
+        }
+        control[id].load(audioItem);
     }
 }
 
 function autoPlayer(id){
     var nextDeck = (id == 0) ? 1 : 0,
         checkBox = document.getElementById("autoPlay");
-    if (checkBox.checked == true){
-        console.log("autoPlayer",control[nextDeck].playing);
-        if(!control[nextDeck].markPlayed && control[nextDeck].playing == false){
+    if (checkBox.checked == true && control[nextDeck].markPlayed == false){
+        if(control[nextDeck].widget && control[nextDeck].playing == true){
+            //SC-Player only: check widget state again
+            control[nextDeck].widget.isPaused(function(paused) {
+                if(paused){
+                    control[nextDeck].play();
+                }
+            });
+        } else if(control[nextDeck].playing == false){
             console.log("autoPlayer","PLAY!");
             control[nextDeck].play();
         }
@@ -133,11 +150,12 @@ class Wrapper {
     set markPlayed(newState) {
         if(newState == this.#played)
             return; //nothing changed
+        
         console.log("markPlayed: "+this.url);
         this.#played = newState;
         const listEntry = $("#fileList option[value='"+ this.url +"']");
         if(listEntry){
-            listEntry.css('background-color', 'lightgrey');
+            listEntry.addClass("played");
         }
     }
 
@@ -171,14 +189,12 @@ class Wrapper {
      * @param {boolean} newState
      */
     set playing(newState) {
-        console.log("playing1",this.id,newState);
         if(newState == false){
             this.EOM = false; //stop blinker
         }
-        console.log("playing2",this.id,newState);
         if(newState == this.#playing)
             return; //nothing changed
-        console.log("playing3",this.id,newState);
+
         this.#playing = newState;
         if(newState == true){
             sendShortMsg([0x90,playLED+this.id,0x7f]);
@@ -224,6 +240,8 @@ class Wrapper {
     load(mediaEntry, autoplay=false) {
         this.url = mediaEntry;
         this.#played = false;
+        this.#playing = false;
+        console.log("loading",this.id,this.url);
         if(mediaEntry.startsWith("file/")){
             var x = mediaEntry.substring(5);
             this.loadFile(fileStore[x-1], autoplay);
