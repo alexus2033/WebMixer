@@ -33,6 +33,7 @@ function autoLoader(id){
     }
 }
 
+//start available player with next song
 function autoPlayer(id){
     var nextDeck = (id == 0) ? 1 : 0,
         checkBox = document.getElementById("autoPlay");
@@ -75,7 +76,7 @@ class Wrapper {
         this.widget = null;
         this.tme = new makeStruct("millis, sec, mins, hours");
         this.#pos = new this.tme(0,0,0,0);
-        this.#prev = new this.tme(1,0,0,0); //force initial update
+        this.#prev = new this.tme(-1,-1,-1,0); //force initial update
     }
 
     /**
@@ -222,6 +223,7 @@ class Wrapper {
     }
 
     movePosition(newPos){
+        this.EOM = false; //reset blinker
         if(!this.widget){
             this.player.seekTo(newPos);
         } else {
