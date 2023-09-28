@@ -75,7 +75,7 @@ class Wrapper {
         this.widget = null;
         this.tme = new makeStruct("millis, sec, mins, hours");
         this.#pos = new this.tme(0,0,0,0);
-        this.#prev = new this.tme(0,0,0,0);
+        this.#prev = new this.tme(1,0,0,0); //force initial update
     }
 
     /**

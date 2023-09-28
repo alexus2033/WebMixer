@@ -104,12 +104,12 @@
     function SCPlayerCreateEvents(id){    
         var widgetIframe = document.getElementById(`sc-player${id}`),
         widget = SC.Widget(widgetIframe);
-
+        //only triggered once
         widget.bind(SC.Widget.Events.READY, function() {
             console.log(`ready player ${id}`);
             widget.getDuration(function(x){
                 control[id].duration = x/1000;
-                control[id].position = SCPlayerPosition[id]/1000;
+                control[id].position = 0;
         });
         widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(x){
         var pos = x.currentPosition;
@@ -122,7 +122,7 @@
             control[id].playing = false;
         });    
         //BUG: this will be triggered after finished-event :-(
-        widget.bind(SC.Widget.Events.PLAY, function(x) {
+        widget.bind(SC.Widget.Events.PLAY, function() {
             control[id].playing = true; 
             widget.getCurrentSound(function(currentSound) {
                 control[id].duration = currentSound.duration/1000;
