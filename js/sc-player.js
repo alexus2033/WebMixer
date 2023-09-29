@@ -106,11 +106,7 @@
         widget = SC.Widget(widgetIframe);
         //only triggered once
         widget.bind(SC.Widget.Events.READY, function() {
-            console.log(`ready player ${id}`);
-            widget.getDuration(function(x){
-                control[id].duration = x/1000;
-                control[id].position = 0;
-        });
+        console.log(`ready player ${id}`);
         widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(x){
         var pos = x.currentPosition;
         if(SCPlayerPosition[id] != pos){

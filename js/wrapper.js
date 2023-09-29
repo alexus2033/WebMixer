@@ -76,7 +76,7 @@ class Wrapper {
         this.widget = null;
         this.tme = new makeStruct("millis, sec, mins, hours");
         this.#pos = new this.tme(0,0,0,0);
-        this.#prev = new this.tme(-1,-1,-1,0); //force initial update
+        this.#prev = new this.tme(0,0,0,0);
     }
 
     /**
@@ -115,10 +115,10 @@ class Wrapper {
         this.#pos.mins = parseInt((this.#remain/60)%60);
         this.#pos.secs = parseInt(this.#remain%60);
         this.#pos.millis = newValue.toFixed(2).slice(-2,-1);
-        if(this.#prev.millis != this.#pos.millis){
-            sendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
-            this.#prev.millis = this.#pos.millis;
-            updateDisp = true;
+        
+        if(this.#prev.mins != this.#pos.mins){
+            sendShortMsg([0x94+this.id, 0x14, this.#pos.mins]);
+            this.#prev.mins = this.#pos.mins
         }
         if(this.#prev.secs != this.#pos.secs){
             sendShortMsg([0x94+this.id, 0x15, this.#pos.secs]);
@@ -130,9 +130,10 @@ class Wrapper {
                 this.markPlayed = true;
             }
         }
-        if(this.#prev.mins != this.#pos.mins){
-            sendShortMsg([0x94+this.id, 0x14, this.#pos.mins]);
-            this.#prev.mins = this.#pos.mins
+        if(this.#prev.millis != this.#pos.millis){
+            sendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
+            this.#prev.millis = this.#pos.millis;
+            updateDisp = true;
         }
         if(this.playing && this.#remain < 21 && this.#remain > 0 && this.EOM == false){
             this.EOM = true;
@@ -287,6 +288,13 @@ class Wrapper {
         } else {
             this.widget.load(trackURL,settings);
         }
+        setTimeout(() => {
+            this.widget.getDuration((x) => {
+                this.#prev = new this.tme(-1,-1,-1,0); //force disp update
+                this.duration = x/1000;
+                this.position = 0;
+            });
+        }, 999);                    
     }
 
     displaySCPlayer(showSC){
