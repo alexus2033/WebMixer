@@ -2,9 +2,9 @@
 
 ## Features
 * Start [here](https://alexus2033.github.io/WebMixer/player.html) without Installation
-* Slim Web-Interface for all modern Browsers
-* No Account/Login needed
-* 2 Decks for Soundcloud, Audius-Tracks or local Sound-Files
+* Slim and fast Web-Interface for all modern Browsers
+* No Account/Login needed, playlist is stored in the browser only
+* 2 Decks for [Soundcloud](https://soundcloud.com), [Audius](https://audius.co/trending)-Tracks or local Sound-Files
 * Fast Track-Selector
 * End-of-Track Indicator
 * Speed-Control for local files
