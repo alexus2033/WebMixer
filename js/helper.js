@@ -113,9 +113,18 @@ function readTitles(readCallback){
     if (typeof(Storage) == "undefined") return;
 
     Object.keys(localStorage).filter(function(key){
+        return key.startsWith("tracks/");
+    }).forEach(oldURL => { //update old metadata 
+        const newURL = "SC/" + oldURL.substring(7);
+        localStorage.setItem(newURL, localStorage.getItem(oldURL));  
+        killTitle(oldURL);
+    });
+
+    Object.keys(localStorage).filter(function(key){
         return !key.startsWith("file/");
     }).forEach(item => {
         const data = JSON.parse(localStorage.getItem(item));
+        if(data[1]=='null'){data[1]=''};
         if(data[1]){
             readCallback(`${data[1]} - ${data[0]}`,item); //title + artist, URL
         } else {
