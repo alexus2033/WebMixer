@@ -110,13 +110,17 @@ class Wrapper {
      * @param {int} newValue
      */
     set position(newValue){
-        var updateDisp = false;
         this.#position = newValue;
         this.#remain = this.duration - newValue;
         this.#pos.mins = parseInt((this.#remain/60)%60);
         this.#pos.secs = parseInt(this.#remain%60);
         this.#pos.millis = newValue.toFixed(2).slice(-2,-1);
         
+        if(this.finished){
+            posDisplay[this.id].innerHTML = "0:00.0";
+            sendShortMsg([0x94+this.id, 0x16, 0]);
+            return; //skip display update
+        }
         if(this.#prev.mins != this.#pos.mins){
             sendShortMsg([0x94+this.id, 0x14, this.#pos.mins]);
             this.#prev.mins = this.#pos.mins
@@ -131,22 +135,14 @@ class Wrapper {
                 this.markPlayed = true;
             }
         }
-        if(this.finished){
-            posDisplay[this.id].innerHTML = "0:00.0";
-            sendShortMsg([0x94+this.id, 0x16, 0]);
-            console.log("Skip!");
-            return;
-        }
         if(this.#prev.millis != this.#pos.millis){
             sendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
             this.#prev.millis = this.#pos.millis;
-            updateDisp = true;
+            //update Time Display
+            posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
         }
         if(this.playing && this.#remain < 21 && this.#remain > 0 && this.EOM == false){
             this.EOM = true; //start blinker
-        }
-        if(updateDisp){ //update Time Display
-            posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
         }
     }
     get position(){
