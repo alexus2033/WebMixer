@@ -131,6 +131,8 @@
         widget.bind(SC.Widget.Events.FINISH, function() {
             console.log(`finish player ${id}`);
             control[id].playing = false;
+            control[id].finished = true;
+            widget.pause();
             autoLoader(id);
         });
     });

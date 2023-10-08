@@ -68,6 +68,7 @@ class Wrapper {
         this.player = newPlayer;
         this.duration = 0;
         this.url = null;
+        this.finished = false;
         this.#remain = 0;
         this.#eom = false;
         this.#played = false;
@@ -130,13 +131,19 @@ class Wrapper {
                 this.markPlayed = true;
             }
         }
+        if(this.finished){
+            posDisplay[this.id].innerHTML = "0:00.0";
+            sendShortMsg([0x94+this.id, 0x16, 0]);
+            console.log("Skip!");
+            return;
+        }
         if(this.#prev.millis != this.#pos.millis){
             sendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
             this.#prev.millis = this.#pos.millis;
             updateDisp = true;
         }
         if(this.playing && this.#remain < 21 && this.#remain > 0 && this.EOM == false){
-            this.EOM = true;
+            this.EOM = true; //start blinker
         }
         if(updateDisp){ //update Time Display
             posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
@@ -199,6 +206,7 @@ class Wrapper {
 
         this.#playing = newState;
         if(newState == true){
+            this.finished = false;
             sendShortMsg([0x90,playLED+this.id,0x7f]);
             $(".playstop")[this.id].value = " Stop ";
         } else {
@@ -242,6 +250,7 @@ class Wrapper {
 
     load(mediaEntry, autoplay=false) {
         this.url = mediaEntry;
+        this.finished = false;
         this.#played = false;
         this.#playing = false;
         console.log("loading",this.id,this.url);
