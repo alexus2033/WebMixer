@@ -82,21 +82,11 @@ function insertTitle(songURL,title,artist,cover,genre){
         added:new Date().getTime()
     };
     const titleStore = setTransaction("readwrite");
-    var result = titleStore.add(record);
+    var result = titleStore.add(newItem);
     result.onerror = function(event){
         let request = event.target; 
         printInfo("DB insert failed: " + request.error);
     }
-}
-
-const demoItem = {
-    id: "audius/qGBBkOP",
-    name: "Orange tales - Like that",
-    artist: "Destinuna",
-    genre: "Electronic",
-    coverArt: "https://audius-content-14.figment.io/content/QmebtB7V8JtcetCrCB3ndmdgESjMFhSkm6NnSoyfMVJBLv/480x480.jpg",
-    added: 1697391643396,
-    start: 0
 }
 
 async function displayCover(audioURL){

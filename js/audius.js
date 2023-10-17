@@ -31,10 +31,10 @@ async function AudiusReadMetadata(url){
 
 function AudiusSaveMetadata(trackURL, meta){
     var title = (meta ? meta.title : newUrl),
-    user = (meta.user.name ? meta.user.name : ""),
+    artist = (meta.user.name ? meta.user.name : ""),
     artwork = (meta.artwork['480x480'] ? meta.artwork['480x480'] : ""),
     genre = (meta.genre ? meta.genre : "");
-    insertTitle(trackURL,title,user,artwork,genre);
+    insertTitle(trackURL,title,artist,artwork,genre);
 }
 
 function AudiusHandleError(response) {
@@ -55,6 +55,16 @@ function AudiusTrackURL(track){
     track = track.replace("audius/","tracks/");
     var url = AudiusAddress + "/v1/" + track;
     return `${url}?app_name=AlphabeatPlayer`;
+}
+
+const AudiusDemoItem = {
+    id: "audius/qGBBkOP",
+    name: "Orange tales - Like that",
+    artist: "Destinuna",
+    genre: "Electronic",
+    coverArt: "https://audius-content-14.figment.io/content/QmebtB7V8JtcetCrCB3ndmdgESjMFhSkm6NnSoyfMVJBLv/480x480.jpg",
+    added: 1697391643396,
+    start: 0
 }
 
 (async () => { 
