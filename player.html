@@ -31,7 +31,7 @@
           </tr>
           <tr>
             <td><div class="pos"></div></td>
-            <td><input type="file" id="selector" accept=".mp3,.wav,.ogg" style="display: none;" multiple>
+            <td><input type="file" id="selector" accept=".mp3,.wav,.ogg,.csv" style="display: none;" multiple>
                <input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
             <td><div class="pos"></div></td>
           </tr>
@@ -41,10 +41,10 @@
                <input type="button" id="urlOpen" value="URL..." />
                <fieldset id="autobox">
                   <legend>Auto</legend>
-                  <label for="autoPlay">Play</label>
-                  <input type="checkbox" id="autoPlay">
-                  <label for="autoLoad">Load</label>
-                  <input type="checkbox" id="autoLoad" onclick ="initAutoLoader();">
+                  <nobr><label for="autoPlay">Play</label>
+                  <input type="checkbox" id="autoPlay"></nobr>
+                  <nobr><label for="autoLoad">Load</label>
+                  <input type="checkbox" id="autoLoad" onclick ="initAutoLoader();"></nobr>
                 </fieldset></td>
             <td><div class="pInfo"></div><div class="deck"></div></td>
          </tr>
@@ -57,19 +57,30 @@
       </table>
       <table>
          <tr>
-           <td>
+           <td colspan="2">
            <select id="fileList" Size="20" style="width: 100%;" autofocus>
-             <option value="audius/qGBBkOP">orange tales - Like that</option>
-             <option value="audius/NQzMK8x">Crying in Sunshine (feat. Arden Jones)</option>
-             <option value="audius/7PAB4A7">Sunrise Series 36</option>
            </select>
            </td>
            <td width="20%"><img id="cover" style="max-width:300px;"></img></td>
          </tr>
+         <tr>
+            <td>
+            <fieldset id="sorter" onchange="fileList.options.length = 0; readTitles(addListEntry);">
+               <legend>Sort </legend>
+               <label><input type="radio" name="sortOpt" value="id" checked>Title</label>
+               <label><input type="radio" name="sortOpt" value="artist">Artist</label>
+               <label><input type="radio" name="sortOpt" value="genre">Genre</label>
+               <label><input type="radio" name="sortOpt" value="duration">Duration</label>
+               <label><input type="radio" name="sortOpt" value="added">Added</label>
+               <label><input type="radio" name="sortOpt" value="played">Played</label>
+             </fieldset>
+            </td>
+            <td><input type="button" onclick ="exportCSV();" value="Export" /></td>
+            <td></td>
+         </tr>
       </table>
-      <input type="button" onclick ="exportCSV();" value="Export" />
       <pre id="log"></pre>
-      <div id = "openDiag" title = "Add new Track">
+      <div id="openDiag" title="Add new Track">
       <fieldset id="radio">
          <legend>Source </legend>
          <label><input type="radio" name="radioOpt" value="audius"><a href="https://audius.co">Audius</a></label>
@@ -163,7 +174,7 @@
    fileList.addEventListener("drop", (event) => {
       drag(event);
       const dt = event.dataTransfer;
-      addFiles(dt.files);
+      addFiles(dt.items);
    });
 
    function drag(event) {
@@ -199,13 +210,41 @@
       }
   }
 
-  function addFiles(files){
-    Array.from(files).forEach(item => {
+  function scanFiles(item) {
+   if (!item.isDirectory) {
       if(item.name.endsWith(".csv")){
         importCSV(item);
       } else {
         var x = fileStore.push(item);
         addListEntry(item.name,'file/' + x,true);
+      }
+   } else {
+    let directoryReader = item.createReader();
+    directoryReader.readEntries(function(entries) {
+        entries.forEach(function(entry) {
+          scanFiles(entry);
+      });
+    });
+   } 
+  }
+  function addFiles(files){
+    Array.from(files).forEach(item => {
+      if(item.type == "text/csv"){
+         importCSV(item);
+      } else if(item.type == "audio/mpeg") {
+         var x = fileStore.push(item);
+         addListEntry(item.name,'file/' + x,true);
+      }
+    });
+    fileList.focus();
+  }
+  function addFilesOld(files){
+    Array.from(files).forEach(item => {
+      //var entry = item.webkitGetAsEntry();
+      if (typeof item.getAsFile === "function") { 
+         scanFiles(item.getAsFile());
+      } else {
+         console.log(item);
       }
     });
     fileList.focus();
