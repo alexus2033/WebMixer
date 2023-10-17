@@ -64,11 +64,14 @@
 
     function SCextractTitle(bigURL){
         const regex = new RegExp("(title=\"((?:\\\\.|[^\"\\\\]){0,})\")", "g");
-        var x, result;
+        var x, result = [];
         while ((x = regex.exec(bigURL))!= null) {
             if(x.length>1){
-                result = htmlDecode(x[2]);
+                result.push(htmlDecode(x[2]));
             }
+        }
+        if(result.length==1){
+            result.push("");
         }
         return result;
     }
@@ -87,18 +90,19 @@
     
     function SCgetCurrentTitle(id,currentSound){
         const meta = currentSound.publisher_metadata;
-        var SCurl = SCextractID(currentSound.uri),
-            title = currentSound.title,
-            artwork = currentSound.artwork_url,
-            genre = currentSound.genre ? currentSound.genre : "",
-            artist = meta.artist ? meta.artist : "";
+        var data = {
+            id: SCextractID(currentSound.uri),
+            name: currentSound.title,
+            artist: meta.artist ? meta.artist : "",
+            genre: currentSound.genre ? currentSound.genre : "",
+            coverArt: currentSound.artwork_url,
+            duration: currentSound.duration
+        };
         if(meta.release_title){
-            title = meta.release_title;
+            data.name = meta.release_title;
         }
-        if(SCurl){
-            writeTitle(SCurl,title,artist,artwork,genre,0);
-        }
-        extraInfo[id].innerText = genre;
+        updateTitle(data);
+        extraInfo[id].innerText = data.genre;
     }
 
     function SCPlayerCreateEvents(id){    

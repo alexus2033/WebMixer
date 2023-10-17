@@ -34,7 +34,7 @@ function AudiusSaveMetadata(trackURL, meta){
     user = (meta.user.name ? meta.user.name : ""),
     artwork = (meta.artwork['480x480'] ? meta.artwork['480x480'] : ""),
     genre = (meta.genre ? meta.genre : "");
-    writeTitle(trackURL,title,user,artwork,genre);
+    insertTitle(trackURL,title,user,artwork,genre);
 }
 
 function AudiusHandleError(response) {

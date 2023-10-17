@@ -158,6 +158,11 @@ class Wrapper {
         
         console.log("markPlayed: "+this.url);
         this.#played = newState;
+        var songInfo = {
+            id: this.url,
+            played: new Date().getTime()
+        }
+        updateTitle(songInfo);
         const listEntry = $("#fileList option[value='"+ this.url +"']");
         if(listEntry){
             listEntry.addClass("played");

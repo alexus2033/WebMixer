@@ -1,39 +1,105 @@
-function readTitle(songURL){
-    if (typeof(Storage) !== "undefined") {
-        return JSON.parse(localStorage.getItem(songURL));    
+
+function idbExists(){
+    return "indexedDB" in window;
+}
+
+if(idbExists){
+    var myDB;
+    var request = indexedDB.open("alpha_idb",1);
+    request.onupgradeneeded = function(e){
+        myDB = e.target.result;
+        if(!myDB.objectStoreNames.contains("titles")){
+            var osTitles = myDB.createObjectStore("titles",{keyPath:"id"});
+            osTitles.createIndex('id','id',{unique: true});
+            osTitles.createIndex('artist','artist',{unique: false});
+            osTitles.createIndex('genre','genre',{unique: false});
+            osTitles.createIndex('duration','duration',{unique: false});
+            osTitles.createIndex('added','added',{unique: false});
+            osTitles.createIndex('played','played',{unique: false});
+        }
     }
+    request.onsuccess = function(e){
+        myDB = request.result;
+    }
+}
+
+function promiseReq(req) {
+    return new Promise((resolve, reject) => {
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+}
+
+function setTransaction(ttype){
+    var trans = myDB.transaction(["titles"],ttype);
+    return trans.objectStore("titles");
+}
+
+async function readTitle(songURL){
+    const titleStore = setTransaction("readonly");
+    let val = await promiseReq(titleStore.get(songURL));
+    return val;
 }
 
 function killTitle(songURL){
-    if (typeof(Storage) !== "undefined" && songURL) {
-        localStorage.removeItem(songURL);    
+    const titleStore = setTransaction("readwrite");
+    var result = titleStore.delete(songURL);
+    result.onerror = function(event){
+        let request = event.target; 
+        printInfo("DB update failed: " + request.error);
     }
 }
 
-function writeTitle(songURL,title){
-    if (typeof(Storage) !== "undefined" && songURL) {
-        if(songURL.startsWith("/")){
-            songURL = songURL.substring(1);
+function updateTitle(entry){
+    const titleStore = setTransaction("readwrite");
+    var result = titleStore.get(entry.id);
+    result.onsuccess = function(event){
+        var record = event.target.result;
+        Object.assign(record, entry); //merge entry into record
+        var result = titleStore.put(record);
+        result.onerror = function(event){
+            let request = event.target; 
+            printInfo("DB update failed: " + request.error);
         }
-        const data = [title,"","",""];
-        localStorage.setItem(songURL, JSON.stringify(data));    
     }
 }
 
-function writeTitle(songURL,title,artist,cover,genre,startPos){
-    if (typeof(Storage) !== "undefined" && songURL) {
+function insertTitle(songURL,title,artist,cover,genre){
+    if (songURL) {
         if(songURL.startsWith("/")){
             songURL = songURL.substring(1);
         }
         if (songURL.startsWith("tracks/")){ //update old metadata 
             songURL = "SC/" + songURL.substring(7);
         }
-        const data = [title,artist,cover,genre,startPos];
-        localStorage.setItem(songURL, JSON.stringify(data));    
+    }
+    const newItem = {
+        id:songURL,
+        name:title,
+        artist:artist,
+        genre:genre,
+        coverArt:cover,
+        added:new Date().getTime()
+    };
+    const titleStore = setTransaction("readwrite");
+    var result = titleStore.add(record);
+    result.onerror = function(event){
+        let request = event.target; 
+        printInfo("DB insert failed: " + request.error);
     }
 }
 
-function displayCover(audioURL){
+const demoItem = {
+    id: "audius/qGBBkOP",
+    name: "Orange tales - Like that",
+    artist: "Destinuna",
+    genre: "Electronic",
+    coverArt: "https://audius-content-14.figment.io/content/QmebtB7V8JtcetCrCB3ndmdgESjMFhSkm6NnSoyfMVJBLv/480x480.jpg",
+    added: 1697391643396,
+    start: 0
+}
+
+async function displayCover(audioURL){
     img = document.getElementById("cover");
     if(audioURL.startsWith('file/')){
       var x = audioURL.substring(5);
@@ -55,17 +121,17 @@ function displayCover(audioURL){
           }
         });
     } else { //not startsWith('file')
-      var songInfo = readTitle(audioURL),
-          cover = "";  
-      if(songInfo[2]){
-        cover = songInfo[2];
-        if(cover.endsWith("large.jpg")){
-            cover = cover.replace("large.jpg","t500x500.jpg");
-        } else if (cover.endsWith("large.png")){
-            cover = cover.replace("large.png","t500x500.png");
+        const songInfo = await readTitle(audioURL);
+        var cover = "";  
+        if(songInfo.coverArt){
+            cover = songInfo.coverArt;
+            if(cover.endsWith("large.jpg")){
+                cover = cover.replace("large.jpg","t500x500.jpg");
+            } else if (cover.endsWith("large.png")){
+                cover = cover.replace("large.png","t500x500.png");
+            }
         }
-      }
-      img.src = cover;
+        img.src = cover;
     }
 }
 
@@ -77,7 +143,7 @@ function importCSV(file){
             const data = line.split(';'),
                 exist = localStorage.getItem(data[0]);
             if(!exist && data.length > 1){
-                writeTitle(data[0],data[1],data[2],data[3],data[4]);
+                insertTitle(data[0],data[1],data[2],data[3],data[4]);
                 if(data[2] && data[2]!=="null"){
                     addListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
@@ -110,27 +176,25 @@ function exportCSV(){
 }
 
 function readTitles(readCallback){
-    if (typeof(Storage) == "undefined") return;
-
-    Object.keys(localStorage).filter(function(key){
-        return key.startsWith("tracks/");
-    }).forEach(oldURL => { //update old metadata 
-        const newURL = "SC/" + oldURL.substring(7);
-        localStorage.setItem(newURL, localStorage.getItem(oldURL));  
-        killTitle(oldURL);
-    });
-
-    Object.keys(localStorage).filter(function(key){
-        return !key.startsWith("file/");
-    }).forEach(item => {
-        const data = JSON.parse(localStorage.getItem(item));
-        if(data[1]=='null'){data[1]=''};
-        if(data[1]){
-            readCallback(`${data[1]} - ${data[0]}`,item); //title + artist, URL
-        } else {
-            readCallback(data[0],item); //title, URL
-        } 
-    });
+    const titleStore = setTransaction("readwrite"),
+          sorter = $("#sorter :checked").val();
+    var order = "next";
+    if(sorter == "added" || sorter == "played"){
+        order = "prev";
+    }
+    var request = titleStore.index(sorter).openCursor(null,order);
+    request.onsuccess = function() {
+        const cursor = request.result;
+        if (cursor) {
+            // Called for each matching record.
+            if(cursor.value.artist){
+                readCallback(`${cursor.value.artist} - ${cursor.value.name}`,cursor.value.id);
+            } else {
+                readCallback(cursor.value.name,cursor.value.id);
+            }
+            cursor.continue();
+        }
+    };
 }
 
 async function addSomethingNew(type,something){
@@ -140,15 +204,16 @@ async function addSomethingNew(type,something){
         newUrl = AudiusExtractID(something);
     }
     if(!newUrl) return false;
-    if(readTitle(newUrl)){
+    if(await readTitle(newUrl)){
         printInfo(newUrl + " already exists");
         return true;
     }
     if(type == "SC"){
         var meta = SCextractTitle(something),
-            title = (meta ? meta : newUrl),
+            title = (meta.length>1 ? meta[1] : newUrl),
+            artist = (meta.length>1 ? meta[0] : "")
             track = newUrl.replace("tracks/","SC/");
-            writeTitle(track,title);
+            insertTitle(track,title,artist);
     } else {
         var url = AudiusAddress + "/v1/" + newUrl,
           meta = await AudiusReadMetadata(url),
@@ -157,7 +222,11 @@ async function addSomethingNew(type,something){
           AudiusSaveMetadata(track,meta);
     }
 
-    addListEntry(title,track,true);
+    if(artist){
+        addListEntry(`${artist} - ${title}`,track,true); //title + artist, URL
+    } else {
+        addListEntry(title,track,true);
+    }
     return true;
 }
 
