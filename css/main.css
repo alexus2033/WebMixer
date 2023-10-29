@@ -24,6 +24,7 @@ body {
 
 .selectOut {
     display: none;
+    max-width: 60%;
 }
 
 .ui-slider-vertical {
