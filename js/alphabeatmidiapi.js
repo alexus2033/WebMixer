@@ -120,11 +120,13 @@
 		//handle Fader & Encoder
 		if(event.data[0] == 0xb0){
 			if(event.data[1] == 0x1f){
-				control[0].setVolume(event.data[2]/128);
+				let newLevel = event.data[2]/128;
+				control[0].setVolume(newLevel);
 				$(".slider:eq(0)").slider('value',newLevel*100);
 			}
 			if(event.data[1] == 0x29){
-				control[1].setVolume(event.data[2]/128);
+				let newLevel = event.data[2]/128;
+				control[1].setVolume(newLevel);
 				$(".slider:eq(1)").slider('value',newLevel*100);
 			}
 			if(event.data[1] == 0x20 || event.data[1] == 0x2a){
