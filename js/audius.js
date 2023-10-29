@@ -65,10 +65,10 @@ const AudiusDemoItem = {
     coverArt: "https://audius-content-14.figment.io/content/QmebtB7V8JtcetCrCB3ndmdgESjMFhSkm6NnSoyfMVJBLv/480x480.jpg",
     added: 1697391643396,
     start: 0
-}
+};
 
 (async () => { 
-    AudiusAddress = "https://discoveryprovider.audius.co"; 
+    AudiusAddress = "https://discoveryprovider.audius.co";
     const sample = (arr) => arr[Math.floor(Math.random() * arr.length)],
         headers = {
             'Accept':'application/json'

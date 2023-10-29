@@ -84,8 +84,10 @@ function insertTitle(songURL,title,artist,cover,genre){
     const titleStore = setTransaction("readwrite");
     var result = titleStore.add(newItem);
     result.onerror = function(event){
-        let request = event.target; 
-        printInfo("DB insert failed: " + request.error);
+        let info = (title ? title : songURL),
+            request = event.target;
+        console.log(request.error); 
+        printInfo("DB insert failed: " + info);
     }
 }
 
@@ -125,15 +127,15 @@ async function displayCover(audioURL){
     }
 }
 
-function importCSV(file){
-    var reader = new FileReader();
+function importCSV(){
+    var file = document.getElementById('importer').files[0],
+        reader = new FileReader();
     reader.onload = function (progressEvent) {
         var lines = this.result.split('\n');
         lines.forEach(line => {
-            const data = line.split(';'),
-                exist = localStorage.getItem(data[0]);
-            if(!exist && data.length > 1){
-                insertTitle(data[0],data[1],data[2],data[3],data[4]);
+            const data = line.split(';');
+            if(data.length > 1){
+                insertTitle(data[0],data[1],data[2],data[3],data[4]); //songURL,title,artist,cover,genre
                 if(data[2] && data[2]!=="null"){
                     addListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
