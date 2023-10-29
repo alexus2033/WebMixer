@@ -122,12 +122,12 @@
 			if(event.data[1] == 0x1f){
 				let newLevel = event.data[2]/128;
 				control[0].setVolume(newLevel);
-				$(".slider:eq(0)").slider('value',newLevel*100);
+				updateSlider(0,newLevel*100);
 			}
 			if(event.data[1] == 0x29){
 				let newLevel = event.data[2]/128;
 				control[1].setVolume(newLevel);
-				$(".slider:eq(1)").slider('value',newLevel*100);
+				updateSlider(1,newLevel*100);
 			}
 			if(event.data[1] == 0x20 || event.data[1] == 0x2a){
 				if(event.data[2] == 0x3f){ // go up

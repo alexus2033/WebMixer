@@ -189,6 +189,12 @@ function readTitles(readCallback){
     };
 }
 
+// update volume slider & display
+function updateSlider(id,volume){
+    $("#volume"+(id+1)).val(volume);
+    $(`.slider:eq(${id})`).slider('value',volume);
+}
+
 async function addSomethingNew(type,something){
     if(type == "SC"){
         newUrl = SCextractID(something);
