@@ -31,7 +31,7 @@
           </tr>
           <tr>
             <td><div class="pos"></div></td>
-            <td><input type="file" id="selector" accept=".mp3,.wav,.ogg,.csv" style="display: none;" multiple>
+            <td><input type="file" id="selector" accept="audio/*" multiple>
                <input type="button" value="File..." onclick="document.getElementById('selector').click();" /></td>
             <td><div class="pos"></div></td>
           </tr>
@@ -41,7 +41,7 @@
                <input type="button" id="urlOpen" value="URL..." />
                <fieldset id="autobox">
                   <legend>Auto</legend>
-                  <nobr><label for="autoPlay">Play</label>
+                  <nobr></nobr><label for="autoPlay">Play</label>
                   <input type="checkbox" id="autoPlay"></nobr>
                   <nobr><label for="autoLoad">Load</label>
                   <input type="checkbox" id="autoLoad" onclick ="initAutoLoader();"></nobr>
@@ -63,10 +63,10 @@
            </td>
            <td width="20%"><img id="cover" style="max-width:300px;"></img></td>
          </tr>
-         <tr>
+        <tr>
             <td>
             <fieldset id="sorter" onchange="fileList.options.length = 0; readTitles(addListEntry);">
-               <legend>Sort </legend>
+               <legend>Sort Table</legend>
                <label><input type="radio" name="sortOpt" value="id" checked>Title</label>
                <label><input type="radio" name="sortOpt" value="artist">Artist</label>
                <label><input type="radio" name="sortOpt" value="genre">Genre</label>
@@ -75,8 +75,11 @@
                <label><input type="radio" name="sortOpt" value="played">Played</label>
              </fieldset>
             </td>
-            <td><input type="button" onclick ="exportCSV();" value="Export" /></td>
-            <td></td>
+            <td><fieldset id="data"><legend>Database</legend>
+                <input type="file" id="importer" accept=".csv" onchange="importCSV();">
+                <input type="button" value="Import" onclick="document.getElementById('importer').click();" />
+                <input type="button" onclick ="exportCSV();" value="Export" />
+            </fieldset></td>
          </tr>
       </table>
       <pre id="log"></pre>
@@ -210,50 +213,23 @@
       }
   }
 
-  function scanFiles(item) {
-   if (!item.isDirectory) {
-      if(item.name.endsWith(".csv")){
-        importCSV(item);
-      } else {
-        var x = fileStore.push(item);
-        addListEntry(item.name,'file/' + x,true);
-      }
-   } else {
-    let directoryReader = item.createReader();
-    directoryReader.readEntries(function(entries) {
-        entries.forEach(function(entry) {
-          scanFiles(entry);
-      });
-    });
-   } 
-  }
-  function addFiles(files){
-    Array.from(files).forEach(item => {
-      if(item.type == "text/csv"){
-         importCSV(item);
-      } else if(item.type == "audio/mpeg") {
-         var x = fileStore.push(item);
-         addListEntry(item.name,'file/' + x,true);
-      }
-    });
+  function scanFiles(items) {
+    for (const item of items) {
+        if (item.isDirectory) {
+            scanFiles(item.files);
+        } else {
+            if(item.type == "audio/mpeg" || item.type == "video/ogg"){
+                var x = fileStore.push(item);
+                addListEntry(item.name,'file/' + x,true);
+            }
+        }
+    }
     fileList.focus();
   }
-  function addFilesOld(files){
-    Array.from(files).forEach(item => {
-      //var entry = item.webkitGetAsEntry();
-      if (typeof item.getAsFile === "function") { 
-         scanFiles(item.getAsFile());
-      } else {
-         console.log(item);
-      }
-    });
-    fileList.focus();
-  }
-
-   // New File selected
-   fileSelector.addEventListener('change', (event) => {
+  // New File selected
+  fileSelector.addEventListener('change', (event) => {
   if(fileSelector.files.length > 0){
-    addFiles(fileSelector.files);
+    scanFiles(fileSelector.files);
   }
 });
 </script>
