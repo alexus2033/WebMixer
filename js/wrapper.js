@@ -225,6 +225,7 @@ class Wrapper {
     }
 
     setVolume(newLevel){
+        console.log(newLevel);
         if(!this.widget){
             this.player.setVolume(newLevel);
         } else {

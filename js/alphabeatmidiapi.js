@@ -38,7 +38,7 @@
 			setDefault();
 		};
 		if(inputs.length + outputs.length == 0){
-			printInfo("No MDI-Devices found");
+			printInfo("No MIDI-Devices found");
 		}
 	}
 
@@ -121,9 +121,11 @@
 		if(event.data[0] == 0xb0){
 			if(event.data[1] == 0x1f){
 				control[0].setVolume(event.data[2]/128);
+				$(".slider:eq(0)").slider('value',newLevel*100);
 			}
 			if(event.data[1] == 0x29){
 				control[1].setVolume(event.data[2]/128);
+				$(".slider:eq(1)").slider('value',newLevel*100);
 			}
 			if(event.data[1] == 0x20 || event.data[1] == 0x2a){
 				if(event.data[2] == 0x3f){ // go up
