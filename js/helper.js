@@ -178,12 +178,27 @@ function readTitles(readCallback){
     request.onsuccess = function() {
         const cursor = request.result;
         if (cursor) {
-            // Called for each matching record.
             if(cursor.value.artist){
-                readCallback(`${cursor.value.artist} - ${cursor.value.name}`,cursor.value.id);
+                var label = `${cursor.value.artist} - ${cursor.value.name}`;
             } else {
-                readCallback(cursor.value.name,cursor.value.id);
+                var label = cursor.value.name;
             }
+            // Called for each matching record.
+            if(sorter == "added"){
+                let ago = moment(cursor.value.added).fromNow();
+                label = `[${ago}] ${label}`;
+            } else if(sorter == "played"){
+                let ago = moment(cursor.value.played).fromNow();
+                label = `[${ago}] ${label}`;
+            } else if(sorter == "duration"){
+                let xyz = timecode(cursor.value.duration)
+                label = `[${xyz}] ${label}`;
+            } else if(sorter == "genre"){
+                label = `[${cursor.value.genre}] ${label}`;
+            } else if(sorter == "artist"){
+                label = `[${cursor.value.artist}] ${cursor.value.name}`;
+            }
+            readCallback(label,cursor.value.id);
             cursor.continue();
         }
     };
@@ -257,7 +272,7 @@ var timecode = function(ms) {
             s: Math.floor((ms/1000) % 60)
           };
         }(ms),
-        tc = []; // Timecode array to be joined with '.'
+        tc = []; // Timecode array to be joined with seperator
 
     if (hms.h > 0) {
       tc.push(hms.h);
@@ -266,7 +281,7 @@ var timecode = function(ms) {
     tc.push((hms.m < 10 && hms.h > 0 ? "0" + hms.m : hms.m));
     tc.push((hms.s < 10  ? "0" + hms.s : hms.s));
 
-    return tc.join('.');
+    return tc.join(':');
   };
   
 function htmlDecode(input){
