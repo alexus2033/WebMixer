@@ -186,6 +186,7 @@ function readTitles(readCallback){
             // Called for each matching record.
             if(sorter == "added"){
                 let ago = moment(cursor.value.added).fromNow();
+                //  ago = moment(cursor.value.added).format('DD.MM.YY hh:mm');
                 label = `[${ago}] ${label}`;
             } else if(sorter == "played"){
                 let ago = moment(cursor.value.played).fromNow();
@@ -198,7 +199,11 @@ function readTitles(readCallback){
             } else if(sorter == "artist"){
                 label = `[${cursor.value.artist}] ${cursor.value.name}`;
             }
-            readCallback(label,cursor.value.id);
+            if(typeof sessionStarted !== 'undefined' && cursor.value.played >= sessionStarted){
+                readCallback(label,cursor.value.id,false,true); //mark as played
+            } else {
+                readCallback(label,cursor.value.id);
+            }
             cursor.continue();
         }
     };

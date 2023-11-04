@@ -104,7 +104,8 @@
    </body>
    <script type = "text/javascript">
       'use strict';
-     var fileSelector = document.getElementById("selector"),
+     var sessionStarted = new Date().getTime(),
+      fileSelector = document.getElementById("selector"),
       log = document.getElementById("log"),
       out1 = document.getElementById("out1"),
       out2 = document.getElementById("out2"),
@@ -224,10 +225,13 @@
 		}
 	}
 
-   function addListEntry(title,url,top=false){
-      var option = document.createElement("option");
+   function addListEntry(title, url, top=false, played=false){
+      let option = document.createElement("option");
       option.text = title;
       option.value = url;
+      if(played){
+         option.className = "played";
+      }
       if(top){
          fileList.add(option,0);
          fileList.selectedIndex = 0;
