@@ -278,7 +278,7 @@ class Wrapper {
         this.displaySCPlayer(false);
         var url = AudiusStreamURL(trackURL),
             song = new Audio(url),
-            songInfo = readTitle(trackURL);
+            songInfo = await readTitle(trackURL);
 
         this.player.load(song);
         if(songInfo.length<4){
@@ -286,8 +286,8 @@ class Wrapper {
             AudiusSaveMetadata(trackURL,meta);
             this.duration = meta.duration;
         } else {
-            playerInfo[this.id].innerText = songInfo[0];
-            extraInfo[this.id].innerText = songInfo[3];
+            playerInfo[this.id].innerText = songInfo.name;
+            extraInfo[this.id].innerText = songInfo.genre;
         }
     }
 

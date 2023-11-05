@@ -121,7 +121,7 @@ async function displayCover(audioURL){
     } else { //not startsWith('file')
         const songInfo = await readTitle(audioURL);
         var cover = "";  
-        if(songInfo.coverArt){
+        if(typeof songInfo !== "undefined" && songInfo.coverArt){
             cover = songInfo.coverArt;
             if(cover.endsWith("large.jpg")){
                 cover = cover.replace("large.jpg","t500x500.jpg");
@@ -153,8 +153,8 @@ function importCSV(){
     reader.readAsText(file);
 }
 
-function exportCSV(){
-    const link = document.createElement("a");
+// export data from localStorage (old)
+function exportOldCSV(){
     var content = "";
     Object.keys(localStorage).filter(function(key){
         return !key.startsWith("file/");
@@ -166,11 +166,36 @@ function exportCSV(){
         });
         content += "\n";
     });
-    const file = new Blob([content], { type: 'text/csv' });
+    Save2File(content);
+}
+
+function Save2File(data) {
+    const link = document.createElement("a"),
+          file = new Blob([data], { type: 'text/csv' });
     link.href = URL.createObjectURL(file);
     link.download = "alphabeat-export.csv";
     link.click();
     URL.revokeObjectURL(link.href);
+}
+
+// export data from indexedDB (new)
+function exportCSV(){
+    const titleStore = setTransaction("readonly"),
+          fieldList = ["id","name","artist","coverArt","genre"];
+    let content = "",
+        loadrequest = titleStore.getAll();
+    loadrequest.onerror = event => reject(event.target.error);
+    loadrequest.onsuccess = event => {
+        var data = event.target.result;
+            data.forEach(row => {
+                fieldList.forEach(key => {
+                    let value = (typeof row[key] !== "undefined" ? row[key] : "");
+                    content += `${value};`
+                });
+            content += "\n";
+        });
+        Save2File(content);
+    };
 }
 
 function readTitles(readCallback){
