@@ -173,8 +173,10 @@
 
    window.onload = function(){
       initMIDI();
-      initPlayers();
-      readTitles(addListEntry);
+      initDatabase().then(function() {
+         readTitles(addListEntry);
+      });
+      initWSPlayers();
    }
   
    //draw volume-sliders

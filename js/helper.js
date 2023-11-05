@@ -1,26 +1,32 @@
+var myDB;
 
-function idbExists(){
-    return "indexedDB" in window;
-}
-
-if(idbExists){
-    var myDB;
-    var request = indexedDB.open("alpha_idb",1);
-    request.onupgradeneeded = function(e){
-        myDB = e.target.result;
-        if(!myDB.objectStoreNames.contains("titles")){
-            var osTitles = myDB.createObjectStore("titles",{keyPath:"id"});
-            osTitles.createIndex('id','id',{unique: true});
-            osTitles.createIndex('artist','artist',{unique: false});
-            osTitles.createIndex('genre','genre',{unique: false});
-            osTitles.createIndex('duration','duration',{unique: false});
-            osTitles.createIndex('added','added',{unique: false});
-            osTitles.createIndex('played','played',{unique: false});
+function initDatabase(){
+    return new Promise (function(resolve) {
+        indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;    
+        if(!indexedDB){
+            return reject("IndexedDB not available");
         }
-    }
-    request.onsuccess = function(e){
-        myDB = request.result;
-    }
+        var request = indexedDB.open("alpha_idb",1);
+        request.onupgradeneeded = function(e){
+            myDB = e.target.result;
+            if(!myDB.objectStoreNames.contains("titles")){
+                var osTitles = myDB.createObjectStore("titles",{keyPath:"id"});
+                osTitles.createIndex('id','id',{unique: true});
+                osTitles.createIndex('artist','artist',{unique: false});
+                osTitles.createIndex('genre','genre',{unique: false});
+                osTitles.createIndex('duration','duration',{unique: false});
+                osTitles.createIndex('added','added',{unique: false});
+                osTitles.createIndex('played','played',{unique: false});
+            }
+        }
+        request.onsuccess = function(){
+            myDB = request.result;
+            return resolve(request.result);
+        }
+        request.onerror = function(){
+            return reject(request.error);
+        }
+    });
 }
 
 function promiseReq(req) {
@@ -174,16 +180,23 @@ function readTitles(readCallback){
     if(sorter == "added" || sorter == "played"){
         order = "prev";
     }
-    var request = titleStore.index(sorter).openCursor(null,order);
+    var index = titleStore.index(sorter);
+    const countRequest = index.count();
+    countRequest.onsuccess = function() {
+        printInfo(`${countRequest.result} Songs found in Database`);
+        if(countRequest.result == 0){
+            readCallback(AudiusDemoItem.name, AudiusDemoItem.id);
+        }
+    };
+    var request = index.openCursor(null,order);
     request.onsuccess = function() {
         const cursor = request.result;
-        if (cursor) {
+        if (cursor) { // Called for each matching record.
             if(cursor.value.artist){
                 var label = `${cursor.value.artist} - ${cursor.value.name}`;
             } else {
                 var label = cursor.value.name;
             }
-            // Called for each matching record.
             if(sorter == "added"){
                 let ago = moment(cursor.value.added).fromNow();
                 //  ago = moment(cursor.value.added).format('DD.MM.YY hh:mm');
@@ -192,8 +205,8 @@ function readTitles(readCallback){
                 let ago = moment(cursor.value.played).fromNow();
                 label = `[${ago}] ${label}`;
             } else if(sorter == "duration"){
-                let xyz = timecode(cursor.value.duration)
-                label = `[${xyz}] ${label}`;
+                let dura = timecode(cursor.value.duration)
+                label = `[${dura}] ${label}`;
             } else if(sorter == "genre"){
                 label = `[${cursor.value.genre}] ${label}`;
             } else if(sorter == "artist"){
@@ -305,6 +318,19 @@ function makeStruct(keys) {
     }
     return constructor;
 }
+
+function fullscreenchanged(event) {
+    // document.fullscreenElement will point to the element that
+    // is in fullscreen mode if there is one. If there isn't one,
+    // the value of the property is null.
+    if (document.fullscreenElement) {
+      console.log(`Element: ${document.fullscreenElement.id} entered fullscreen mode.`);
+    } else {
+      console.log("Leaving fullscreen mode.");
+    }
+  }
+  
+  document.addEventListener("fullscreenchange", fullscreenchanged);
 
 (async () => {  //keep Screen Awake
     if ("wakeLock" in navigator) {

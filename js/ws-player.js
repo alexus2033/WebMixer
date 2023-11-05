@@ -19,7 +19,7 @@
         plugins: [ pHead ]
     };
 
-    function initPlayers(){
+    function initWSPlayers(){
         deck.toArray().forEach(function (item, id) {
             WScreatePlayer(item, id);
         });
@@ -39,11 +39,12 @@
         player[id].on('ready', function(e) {
             control[id].duration = player[id].getDuration();
             displayTime(id);  
-            player[id].playhead.setPlayheadTime(0); });
+            player[id].playhead.setPlayheadTime(control[id].start); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
         player[id].on('finish', function(e) {
-            control[id].playing = false; 
+            control[id].playing = false;
+            control[id].finished = true;
             autoLoader(id);
         });
         return player[id];
