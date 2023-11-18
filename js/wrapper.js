@@ -321,7 +321,7 @@ class Wrapper {
             if(this.player.isDestroyed){
                 this.player = WScreatePlayer(deck[this.id],this.id);
             }
-            this.player.setWaveColor('#3B8686');
+            this.player.setWaveColor(pOps.waveColor);
         }
         playerInfo[this.id].innerText = "";
         extraInfo[this.id].innerText = "";

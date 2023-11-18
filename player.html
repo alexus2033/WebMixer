@@ -8,12 +8,12 @@
       <!-- externals -->
       <script type= "text/javascript" src= "https://code.jquery.com/jquery-1.10.2.js"></script>
       <script type= "text/javascript" src= "https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js@6.6.3/dist/wavesurfer.min.js"></script>
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js@6.6.4/dist/wavesurfer.min.js"></script>
       <script type= "text/javascript" src= "https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
       <script type= "text/javascript" src= "https://w.soundcloud.com/player/api.js"></script>
       <script type= "text/javascript" src= "https://momentjs.com/downloads/moment.min.js"></script>
       <!-- plugins -->
-      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js@6.6.3/dist/plugin/wavesurfer.playhead.min.js"></script>
+      <script type= "text/javascript" src= "https://unpkg.com/wavesurfer.js@6.6.4/dist/plugin/wavesurfer.playhead.min.js"></script>
       <!-- internals-->
       <script type= "text/javascript" src= "js/helper.js"></script>
       <script type= "text/javascript" src= "js/alphabeatmidiapi.js"></script>
@@ -174,7 +174,7 @@
    window.onload = function(){
       initMIDI();
       initDatabase().then(function() {
-         readTitles(addListEntry);
+         readTitles(addListEntry,true);
       });
       initWSPlayers();
    }
