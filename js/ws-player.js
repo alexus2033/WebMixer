@@ -1,23 +1,24 @@
-// Wavesurfer player script V0.9
+// Wavesurfer player script V0.8
 {
     var control = [];
-    // Create a canvas gradient
-    const ctx = document.createElement('canvas').getContext('2d'),
-        greyGard = ctx.createLinearGradient(0, 0, 0, 150);
-        greyGard.addColorStop(0, 'rgb(199, 199, 199)')
-        greyGard.addColorStop(0.7, 'rgb(100, 100, 100)')
-        greyGard.addColorStop(1, 'rgb(0, 0, 0)')
 
+    const pHead = WaveSurfer.playhead.create({
+        returnOnPause: false,
+        moveOnSeek: true,
+        draw: true
+    });
     var pOps = {
         normalize: true,
         scrollParent: true,
         autoCenterImmediately: true,
-        waveColor: greyGard,
-        progressColor: '#ff5501',
+        backgroundColor: '#f5f5f5',
+        waveColor: 'grey',
+        progressColor: 'hsla(200, 100%, 30%, 0.5)',
         barWidth: 3,
-        cursorColor : 'red'
+        cursorColor : 'red',
+        plugins: [ pHead ]
     };
-    
+
     function initWSPlayers(){
         deck.toArray().forEach(function (item, id) {
             WScreatePlayer(item, id);
@@ -37,8 +38,8 @@
         player[id].on('audioprocess', function(e) { displayTime(id) });
         player[id].on('ready', function(e) {
             control[id].duration = player[id].getDuration();
-            posDisplay[id].innerText = "";
-        });
+            displayTime(id);  
+            player[id].playhead.setPlayheadTime(control[id].start); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
         player[id].on('finish', function(e) {
@@ -88,10 +89,10 @@
             remain = player[id].getDuration() - curPos;
         control[id].position = curPos;
         if(remain < 21 && remain > 0){
-           //player[id].setWaveColor('red');
+           player[id].setWaveColor('red');
            blinker = true;
         } else if (blinker){
-           //player[id].setWaveColor(pOps.waveColor);
+           player[id].setWaveColor(pOps.waveColor);
            blinker = false;
         }
      }

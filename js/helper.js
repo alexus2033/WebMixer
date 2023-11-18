@@ -198,7 +198,14 @@ function exportCSV(){
     };
 }
 
-function displayCount(index){
+function readTitles(readCallback){
+    const titleStore = setTransaction("readwrite"),
+          sorter = $("#sorter :checked").val();
+    var order = "next";
+    if(sorter == "added" || sorter == "played"){
+        order = "prev";
+    }
+    var index = titleStore.index(sorter);
     const countRequest = index.count();
     countRequest.onsuccess = function() {
         printInfo(`${countRequest.result} Songs found in Database`);
@@ -206,19 +213,6 @@ function displayCount(index){
             readCallback(AudiusDemoItem.name, AudiusDemoItem.id);
         }
     };
-}
-
-function readTitles(readCallback,displayCounter=false){
-    const titleStore = setTransaction("readwrite"),
-          sorter = $("#sorter :checked").val();
-    let order = "next";
-    if(sorter == "added" || sorter == "played"){
-        order = "prev";
-    }
-    var index = titleStore.index(sorter);
-    if(displayCounter){
-        displayCount(index);       
-    }
     var request = index.openCursor(null,order);
     request.onsuccess = function() {
         const cursor = request.result;

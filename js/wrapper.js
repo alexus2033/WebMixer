@@ -245,7 +245,7 @@ class Wrapper {
         if(!this.widget){
             this.#startMarker = SCPlayerPosition[this.id];
         } else {
-            this.#startMarker = 0;
+            this.#startMarker = this.player.playhead.playheadTime;
         }
     }
 
@@ -308,7 +308,7 @@ class Wrapper {
     }
 
     displaySCPlayer(showSC){
-        //const wave = this.player.container.querySelector("wave");
+        const wave = this.player.container.querySelector("wave");
         if(showSC == true && !this.player.isDestroyed){
             this.player.stop();
             this.player.destroy();
@@ -321,7 +321,7 @@ class Wrapper {
             if(this.player.isDestroyed){
                 this.player = WScreatePlayer(deck[this.id],this.id);
             }
-            //this.player.setWaveColor('#3B8686');
+            this.player.setWaveColor('#3B8686');
         }
         playerInfo[this.id].innerText = "";
         extraInfo[this.id].innerText = "";
