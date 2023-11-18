@@ -120,12 +120,12 @@
 		//handle Fader & Encoder
 		if(event.data[0] == 0xb0){
 			if(event.data[1] == 0x1f){
-				let newLevel = event.data[2]/128;
+				let newLevel = event.data[2]/127;
 				control[0].setVolume(newLevel);
 				updateSlider(0,newLevel*100);
 			}
 			if(event.data[1] == 0x29){
-				let newLevel = event.data[2]/128;
+				let newLevel = event.data[2]/127;
 				control[1].setVolume(newLevel);
 				updateSlider(1,newLevel*100);
 			}
