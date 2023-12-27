@@ -215,15 +215,16 @@ function readTitles(readCallback,displayCounter=false){
     if(sorter == "added" || sorter == "played"){
         order = "prev";
     }
-    var index = titleStore.index(sorter);
+    let index = titleStore.index(sorter),
+        findtext = $("#searchbox input").val().trim();
     if(displayCounter){
         displayCount(index);       
     }
-    var request = index.openCursor(null,order);
+    let request = titleStore.openCursor(null,order);
     request.onsuccess = function() {
         const cursor = request.result;
         if (cursor) { // Called for each matching record.
-            if(cursor.value.artist){
+            if(cursor.value.artist && !cursor.value.name.startsWith(cursor.value.artist)){
                 var label = `${cursor.value.artist} - ${cursor.value.name}`;
             } else {
                 var label = cursor.value.name;
@@ -243,10 +244,12 @@ function readTitles(readCallback,displayCounter=false){
             } else if(sorter == "artist"){
                 label = `[${cursor.value.artist}] ${cursor.value.name}`;
             }
-            if(typeof sessionStarted !== 'undefined' && cursor.value.played >= sessionStarted){
-                readCallback(label,cursor.value.id,false,true); //mark as played
-            } else {
-                readCallback(label,cursor.value.id);
+            if(label.toLowerCase().includes(findtext.toLowerCase())){
+                if(typeof sessionStarted !== 'undefined' && cursor.value.played >= sessionStarted){
+                    readCallback(label,cursor.value.id,false,true); //mark as played
+                } else {
+                    readCallback(label,cursor.value.id);
+                }
             }
             cursor.continue();
         }

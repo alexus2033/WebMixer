@@ -64,7 +64,7 @@
       </table>
       <table>
          <tr>
-           <td colspan="2">
+           <td colspan="3">
            <select id="fileList" Size="20" style="width: 100%;" autofocus>
            </select>
            </td>
@@ -81,6 +81,12 @@
                <label><input type="radio" name="sortOpt" value="added">Added</label>
                <label><input type="radio" name="sortOpt" value="played">Played</label>
              </fieldset>
+            </td>
+            <td>
+               <fieldset id="searchbox">
+                  <legend>Search</legend>
+                  <label><input type="search" maxlength="30"></label>
+               </fieldset>
             </td>
             <td><fieldset id="data"><legend>Database</legend>
                 <input type="file" id="importer" accept=".csv" onchange="importCSV();">
@@ -141,6 +147,13 @@
          fileList.focus();
       }});
 
+      $("#searchbox").keydown(function (event) {
+         if (event.keyCode == $.ui.keyCode.ENTER) {
+            fileList.options.length = 0;
+            readTitles(addListEntry);
+            return;
+        }
+      });
       fileList.addEventListener("change", listChanged); //not triggered via MIDI
       fileList.addEventListener("keyup", (event) => {
          const selectedIdx = fileList.selectedIndex; 
