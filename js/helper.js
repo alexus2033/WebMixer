@@ -220,7 +220,7 @@ function readTitles(readCallback,displayCounter=false){
     if(displayCounter){
         displayCount(index);       
     }
-    let request = titleStore.openCursor(null,order);
+    let request = index.openCursor(null,order);
     request.onsuccess = function() {
         const cursor = request.result;
         if (cursor) { // Called for each matching record.
