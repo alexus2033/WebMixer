@@ -206,6 +206,7 @@ class Wrapper {
             return; //nothing changed
 
         this.#playing = newState;
+        console.log(newState);
         if(newState == true){
             this.finished = false;
             sendShortMsg([0x90,playLED+this.id,0x7f]);
