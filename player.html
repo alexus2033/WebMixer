@@ -127,9 +127,13 @@
       ($("#openDiag").dialog("isOpen") == false) ? $(
         "#openDiag").dialog("open") : $("#openDiag").dialog("close") ;
       });
-      $("#openDiag").keydown(function (event) {
-        if (event.keyCode == $.ui.keyCode.ENTER) {
+      $("#openDiag").keyup(function (event) {
+        if (event.keyCode == $.ui.keyCode.ESCAPE){
             $(this).parent().find('button:nth-child(1)').click();
+            return false;
+        }
+        if (event.keyCode == $.ui.keyCode.ENTER){
+            $(this).parent().find("button:contains('Add')").click();
             return false;
         }
       });
@@ -147,7 +151,13 @@
          fileList.focus();
       }});
 
-      $("#searchbox").keydown(function (event) {
+      $("#searchbox").on('search', function () { // reset, not used with firefox
+         if($("#searchbox input").val().trim() === ""){
+            fileList.options.length = 0;
+            readTitles(addListEntry);
+         }
+      });
+      $("#searchbox").keyup(function (event) {
          if (event.keyCode == $.ui.keyCode.ENTER) {
             fileList.options.length = 0;
             readTitles(addListEntry);
