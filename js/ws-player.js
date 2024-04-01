@@ -1,13 +1,13 @@
-// Wavesurfer player script V0.8
+// Wavesurfer player script V0.9
 {
     var control = [];
     // Create a canvas gradient
     const ctx = document.createElement('canvas').getContext('2d'),
-    greyGard = ctx.createLinearGradient(0, 0, 0, 150);
-    greyGard.addColorStop(0, 'rgb(199, 199, 199)')
-    greyGard.addColorStop(0.7, 'rgb(100, 100, 100)')
-    greyGard.addColorStop(1, 'rgb(0, 0, 0)')
-    
+        greyGard = ctx.createLinearGradient(0, 0, 0, 150);
+        greyGard.addColorStop(0, 'rgb(199, 199, 199)')
+        greyGard.addColorStop(0.7, 'rgb(100, 100, 100)')
+        greyGard.addColorStop(1, 'rgb(0, 0, 0)')
+
     const pHead = WaveSurfer.playhead.create({
         returnOnPause: false,
         moveOnSeek: true,
@@ -23,7 +23,7 @@
         cursorColor : 'red',
         plugins: [ pHead ]
     };
-
+    
     function initWSPlayers(){
         deck.toArray().forEach(function (item, id) {
             WScreatePlayer(item, id);
@@ -34,8 +34,8 @@
         pOps.container = container;
         player[id] = WaveSurfer.create(pOps);
         player[id].on('loading', function(e) {
-            if(!player[id].isPlaying() && e<100){
-                posDisplay[id].innerText = `loading ${e}%`;
+            if(!player[id].isPlaying()){
+                posDisplay[id].innerText = e<100 ? `loading ${e}%` : `loading` ;
             }
          });
         control[id] = new Wrapper(id,player[id]);
@@ -43,8 +43,8 @@
         player[id].on('audioprocess', function(e) { displayTime(id) });
         player[id].on('ready', function(e) {
             control[id].duration = player[id].getDuration();
-            displayTime(id);  
-            player[id].playhead.setPlayheadTime(control[id].start); });
+            displayTime(id);
+        player[id].playhead.setPlayheadTime(control[id].start); });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
         player[id].on('finish', function(e) {
@@ -94,10 +94,10 @@
             remain = player[id].getDuration() - curPos;
         control[id].position = curPos;
         if(remain < 21 && remain > 0){
-           player[id].setWaveColor('red');
+           //player[id].setWaveColor('red');
            blinker = true;
         } else if (blinker){
-           player[id].setWaveColor(pOps.waveColor);
+           //player[id].setWaveColor(pOps.waveColor);
            blinker = false;
         }
      }

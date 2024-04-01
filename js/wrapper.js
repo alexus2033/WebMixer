@@ -206,7 +206,7 @@ class Wrapper {
             return; //nothing changed
 
         this.#playing = newState;
-        console.log(newState);
+console.log(newState);
         if(newState == true){
             this.finished = false;
             sendShortMsg([0x90,playLED+this.id,0x7f]);
@@ -265,6 +265,7 @@ class Wrapper {
             const [trackURL, settings] = SCGetTrackURL(mediaEntry,autoplay);
             this.loadSCTrack(trackURL,settings);
         }
+        this.#prev = new this.tme(-1,-1,-1,0); //force disp update
         if(autoplay==true) this.player.play();
     }
 
@@ -309,7 +310,6 @@ class Wrapper {
     }
 
     displaySCPlayer(showSC){
-        const wave = this.player.container.querySelector("wave");
         if(showSC == true && !this.player.isDestroyed){
             this.player.stop();
             this.player.destroy();
