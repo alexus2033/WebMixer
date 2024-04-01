@@ -101,6 +101,11 @@
         if(meta.release_title){
             data.name = meta.release_title;
         }
+        if(currentSound.full_duration > currentSound.duration){
+            if(!data.name.toLowerCase().includes("demo")){
+                data.name += " (DEMO)";
+            }
+        }
         updateTitle(data);
         extraInfo[id].innerText = data.genre;
     }
@@ -126,7 +131,7 @@
             control[id].playing = true; 
             widget.getCurrentSound(function(currentSound) {
                 control[id].duration = currentSound.duration/1000;
-                SCgetCurrentTitle(id,currentSound);         
+                SCgetCurrentTitle(id,currentSound);
             });
             if(control[id].url.startsWith("users/")){
                 SCgetPlaylist(widget,id);
