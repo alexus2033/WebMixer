@@ -118,15 +118,15 @@ class Wrapper {
         
         if(this.finished){
             posDisplay[this.id].innerHTML = "0:00.0";
-            sendShortMsg([0x94+this.id, 0x16, 0]);
+            MIDIsendShortMsg([0x94+this.id, 0x16, 0]);
             return; //skip display update
         }
         if(this.#prev.mins != this.#pos.mins){
-            sendShortMsg([0x94+this.id, 0x14, this.#pos.mins]);
+            MIDIsendShortMsg([0x94+this.id, 0x14, this.#pos.mins]);
             this.#prev.mins = this.#pos.mins
         }
         if(this.#prev.secs != this.#pos.secs){
-            sendShortMsg([0x94+this.id, 0x15, this.#pos.secs]);
+            MIDIsendShortMsg([0x94+this.id, 0x15, this.#pos.secs]);
             this.#prev.secs = this.#pos.secs;
             if(this.#remain > 0 && this.#remain < startSecs){
                 autoPlayer(this.id);
@@ -136,7 +136,7 @@ class Wrapper {
             }
         }
         if(this.#prev.millis != this.#pos.millis){
-            sendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
+            MIDIsendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
             this.#prev.millis = this.#pos.millis;
             //update Time Display
             posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
@@ -162,7 +162,7 @@ class Wrapper {
             id: this.url,
             played: new Date().getTime()
         }
-        updateTitle(songInfo);
+        DBupdateTitle(songInfo);
         const listEntry = $("#fileList option[value='"+ this.url +"']");
         if(listEntry){
             listEntry.addClass("played");
@@ -182,12 +182,12 @@ class Wrapper {
             
         this.#eom = newState;
         if(newState == true){
-            sendShortMsg([0x90,msgEOM+this.id,0x7f]);
+            MIDIsendShortMsg([0x90,msgEOM+this.id,0x7f]);
             if(this.widget && this.url.startsWith("users/")){
                 SCgetPlaylist(this.widget,this.id); //reload playlist
             }
         } else {
-            sendShortMsg([0x90,msgEOM+this.id,0x01]);
+            MIDIsendShortMsg([0x90,msgEOM+this.id,0x01]);
         }
     }
 
@@ -209,10 +209,10 @@ class Wrapper {
 console.log(newState);
         if(newState == true){
             this.finished = false;
-            sendShortMsg([0x90,playLED+this.id,0x7f]);
+            MIDIsendShortMsg([0x90,playLED+this.id,0x7f]);
             $(".playstop")[this.id].value = " Stop ";
         } else {
-            sendShortMsg([0x90,playLED+this.id,0x01]);
+            MIDIsendShortMsg([0x90,playLED+this.id,0x01]);
             $(".playstop")[this.id].value = " Play ";
         }
     }
@@ -280,7 +280,7 @@ console.log(newState);
         this.displaySCPlayer(false);
         var url = AudiusStreamURL(trackURL),
             song = new Audio(url),
-            songInfo = await readTitle(trackURL);
+            songInfo = await DBreadTitle(trackURL);
 
         this.player.load(song);
         if(songInfo.length<4){

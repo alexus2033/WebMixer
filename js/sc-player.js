@@ -19,7 +19,7 @@
     function SCPlayerCreate(id,trackURL,autoplay = false) {
         settings["auto_play"] = autoplay;       
         var ifrm = document.createElement("iframe");
-        ifrm.setAttribute("src", createURL(trackURL,settings));
+        ifrm.setAttribute("src", SCcreateURL(trackURL,settings));
         ifrm.setAttribute("allow","autoplay");
         ifrm.setAttribute("frameborder","no");
         ifrm.setAttribute("id",`sc-player${id}`);
@@ -32,7 +32,7 @@
         SCPlayerCreateEvents(id); 
     }
 
-    function createURL(trackURL,props)
+    function SCcreateURL(trackURL,props)
     {
       var result = `https://w.soundcloud.com/player/?url=${trackURL}`;
       Object.entries(props).forEach(entry => {
@@ -106,7 +106,7 @@
                 data.name += " (DEMO)";
             }
         }
-        updateTitle(data);
+        DBupdateTitle(data);
         extraInfo[id].innerText = data.genre;
     }
 

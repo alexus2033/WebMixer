@@ -24,7 +24,7 @@
         plugins: [ pHead ]
     };
     
-    function initWSPlayers(){
+    function WSPlayersInit(){
         deck.toArray().forEach(function (item, id) {
             WScreatePlayer(item, id);
         });
@@ -108,9 +108,9 @@
 		if(player){
             player.toArray().forEach(function (item, id) {
                 item.stop();
-                sendShortMsg([0x94+id, 0x16, 0x00]);
-                sendShortMsg([0x94+id, 0x15, 0x00]);
-                sendShortMsg([0x94+id, 0x14, 0x00]);
+                MIDIsendShortMsg([0x94+id, 0x16, 0x00]);
+                MIDIsendShortMsg([0x94+id, 0x15, 0x00]);
+                MIDIsendShortMsg([0x94+id, 0x14, 0x00]);
             });
 		}
 	}

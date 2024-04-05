@@ -72,7 +72,7 @@
          </tr>
         <tr>
             <td>
-            <fieldset id="sorter" onchange="fileList.options.length = 0; readTitles(addListEntry);">
+            <fieldset id="sorter" onchange="fileList.options.length = 0; DBreadTitles(UIaddListEntry);">
                <legend>Sort Table</legend>
                <label><input type="radio" name="sortOpt" value="id" checked>Title</label>
                <label><input type="radio" name="sortOpt" value="artist">Artist</label>
@@ -154,17 +154,17 @@
       $("#searchbox").on('search', function () { // reset, not used with firefox
          if($("#searchbox input").val().trim() === ""){
             fileList.options.length = 0;
-            readTitles(addListEntry);
+            DBreadTitles(UIaddListEntry);
          }
       });
       $("#searchbox").keyup(function (event) {
          if (event.keyCode == $.ui.keyCode.ENTER) {
             fileList.options.length = 0;
-            readTitles(addListEntry);
+            DBreadTitles(UIaddListEntry);
             return;
         }
       });
-      fileList.addEventListener("change", listChanged); //not triggered via MIDI
+      fileList.addEventListener("change", UIlistChanged); //not triggered via MIDI
       fileList.addEventListener("keyup", (event) => {
          const selectedIdx = fileList.selectedIndex; 
          if(event.repeat || selectedIdx < 0)
@@ -172,10 +172,10 @@
 
       switch (event.key) {
          case "Enter":
-         loadSelectedEntry();
+         UIloadSelectedEntry();
          break;
          case " ": //Space-Key
-         var id = loadSelectedEntry(true);
+         var id = UIloadSelectedEntry(true);
          break;  
          case "Del":
          case "Delete":
@@ -195,18 +195,18 @@
    },false);
 
    window.onload = function(){
-      initMIDI();
-      initDatabase().then(function() {
-         readTitles(addListEntry,true);
+      MIDIinit();
+      DBinit().then(function() {
+         DBreadTitles(UIaddListEntry,true);
       });
-      initWSPlayers();
+      WSPlayersInit();
    }
   
    //draw volume-sliders
    $(".slider").slider({
-   orientation: "vertical",
-   range: "min",
-   min: 0, max: 100, value: 100
+      orientation: "vertical",
+      range: "min",
+      min: 0, max: 100, value: 100
    });
    $(".slider:eq(0)").on("slide", function(event, ui){
       control[0].setVolume(ui.value/100);
@@ -219,23 +219,23 @@
    updateSlider(0,100);
    updateSlider(1,100);
 
-   fileList.ondblclick = loadSelectedEntry;
+   fileList.ondblclick = UIloadSelectedEntry;
 
    // drag & drop files to list
-   fileList.addEventListener("dragenter", drag, false);
-   fileList.addEventListener("dragover", drag, false);
+   fileList.addEventListener("dragenter", UIdrag, false);
+   fileList.addEventListener("dragover", UIdrag, false);
    fileList.addEventListener("drop", (event) => {
-      drag(event);
+      UIdrag(event);
       const dt = event.dataTransfer;
       addFiles(dt.items);
    });
 
-   function drag(event) {
+   function UIdrag(event) {
       event.stopPropagation();
       event.preventDefault();
    }
    
-   function loadSelectedEntry(autoplay = false){
+   function UIloadSelectedEntry(autoplay = false){
       const selectedIdx = fileList.selectedIndex;
       if(selectedIdx < 0) return;
       var id = availableDeck(),
@@ -243,14 +243,14 @@
       control[id].load(audioElement, autoplay);
    }
 
-   function listChanged(){
+   function UIlistChanged(){
 	   const selectedIdx = fileList.selectedIndex;
 		if(selectedIdx > -1){
 			  displayCover(fileList.options[selectedIdx].value);
 		}
 	}
 
-   function addListEntry(title, url, top=false, played=false){
+   function UIaddListEntry(title, url, top=false, played=false){
       let option = document.createElement("option");
       option.text = title;
       option.value = url;
@@ -266,14 +266,14 @@
       }
   }
 
-  function scanFiles(items) {
+  function UIscanFiles(items) {
     for (const item of items) {
         if (item.isDirectory) {
-            scanFiles(item.files);
+            UIscanFiles(item.files);
         } else {
             if(item.type.startsWith("audio/") || item.type == "video/ogg"){
                 var x = fileStore.push(item);
-                addListEntry(item.name,'file/' + x,true);
+                UIaddListEntry(item.name,'file/' + x,true);
             }
         }
     }
@@ -282,7 +282,7 @@
   // New File selected
   fileSelector.addEventListener('change', (event) => {
   if(fileSelector.files.length > 0){
-    scanFiles(fileSelector.files);
+    UIscanFiles(fileSelector.files);
   }
 });
 </script>

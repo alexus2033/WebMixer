@@ -1,6 +1,6 @@
 var myDB;
 
-function initDatabase(){
+function DBinit(){
     return new Promise (function(resolve) {
         indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;    
         if(!indexedDB){
@@ -36,19 +36,19 @@ function promiseReq(req) {
     });
 }
 
-function setTransaction(ttype){
+function DBsetTransaction(ttype){
     var trans = myDB.transaction(["titles"],ttype);
     return trans.objectStore("titles");
 }
 
-async function readTitle(songURL){
-    const titleStore = setTransaction("readonly");
+async function DBreadTitle(songURL){
+    const titleStore = DBsetTransaction("readonly");
     let val = await promiseReq(titleStore.get(songURL));
     return val;
 }
 
-function killTitle(songURL){
-    const titleStore = setTransaction("readwrite");
+function DBkillTitle(songURL){
+    const titleStore = DBsetTransaction("readwrite");
     var result = titleStore.delete(songURL);
     result.onerror = function(event){
         let request = event.target; 
@@ -56,8 +56,8 @@ function killTitle(songURL){
     }
 }
 
-function updateTitle(entry){
-    const titleStore = setTransaction("readwrite");
+function DBupdateTitle(entry){
+    const titleStore = DBsetTransaction("readwrite");
     var result = titleStore.get(entry.id);
     result.onsuccess = function(event){
         var record = event.target.result;
@@ -70,7 +70,7 @@ function updateTitle(entry){
     }
 }
 
-function insertTitle(songURL,title,artist,cover,genre){
+function DBinsertTitle(songURL,title,artist,cover,genre){
     if (songURL) {
         if(songURL.startsWith("/")){
             songURL = songURL.substring(1);
@@ -87,7 +87,7 @@ function insertTitle(songURL,title,artist,cover,genre){
         coverArt:cover,
         added:new Date().getTime()
     };
-    const titleStore = setTransaction("readwrite");
+    const titleStore = DBsetTransaction("readwrite");
     var result = titleStore.add(newItem);
     result.onerror = function(event){
         let info = (title ? title : songURL),
@@ -119,7 +119,7 @@ async function displayCover(audioURL){
           }
         });
     } else { //not startsWith('file')
-        const songInfo = await readTitle(audioURL);
+        const songInfo = await DBreadTitle(audioURL);
         var cover = "";  
         if(typeof songInfo !== "undefined" && songInfo.coverArt){
             cover = songInfo.coverArt;
@@ -141,7 +141,7 @@ function importCSV(){
         lines.forEach(line => {
             const data = line.split(';');
             if(data.length > 1){
-                insertTitle(data[0],data[1],data[2],data[3],data[4]); //songURL,title,artist,cover,genre
+                DBinsertTitle(data[0],data[1],data[2],data[3],data[4]); //songURL,title,artist,cover,genre
                 if(data[2] && data[2]!=="null"){
                     addListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
@@ -180,7 +180,7 @@ function Save2File(data) {
 
 // export data from indexedDB (new)
 function exportCSV(){
-    const titleStore = setTransaction("readonly"),
+    const titleStore = DBsetTransaction("readonly"),
           fieldList = ["id","name","artist","coverArt","genre"];
     let content = "",
         loadrequest = titleStore.getAll();
@@ -202,14 +202,11 @@ function displayCount(index){
     const countRequest = index.count();
     countRequest.onsuccess = function() {
         printInfo(`${countRequest.result} Songs found in Database`);
-        if(countRequest.result == 0){
-            readCallback(AudiusDemoItem.name, AudiusDemoItem.id);
-        }
     };
 }
 
-function readTitles(readCallback,displayCounter=false){
-    const titleStore = setTransaction("readwrite"),
+function DBreadTitles(readCallback,displayCounter=false){
+    const titleStore = DBsetTransaction("readwrite"),
           sorter = $("#sorter :checked").val();
     let order = "next";
     if(sorter == "added" || sorter == "played"){
@@ -218,7 +215,9 @@ function readTitles(readCallback,displayCounter=false){
     let index = titleStore.index(sorter),
         findtext = $("#searchbox input").val().trim();
     if(displayCounter){
-        displayCount(index);       
+        if(displayCount(index)==0){
+            readCallback(AudiusDemoItem.name, AudiusDemoItem.id);
+        }       
     }
     let request = index.openCursor(null,order);
     request.onsuccess = function() {
@@ -269,7 +268,7 @@ async function addSomethingNew(type,something){
         newUrl = AudiusExtractID(something);
     }
     if(!newUrl) return false;
-    if(await readTitle(newUrl)){
+    if(await DBreadTitle(newUrl)){
         printInfo(newUrl + " already exists");
         return true;
     }
@@ -278,7 +277,7 @@ async function addSomethingNew(type,something){
             title = (meta.length>1 ? meta[1] : newUrl),
             artist = (meta.length>1 ? meta[0] : "")
             track = newUrl.replace("tracks/","SC/");
-            insertTitle(track,title,artist);
+            DBinsertTitle(track,title,artist);
     } else {
         var url = AudiusAddress + "/v1/" + newUrl,
           meta = await AudiusReadMetadata(url),
@@ -293,6 +292,13 @@ async function addSomethingNew(type,something){
         addListEntry(title,track,true);
     }
     return true;
+}
+
+function updateListEntry(id, title){
+    const listEntry = $("#fileList option[value='"+ id +"']");
+    if(listEntry){
+        listEntry.text(title);
+    }        
 }
 
 function printInfo(value){

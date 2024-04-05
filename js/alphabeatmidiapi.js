@@ -4,7 +4,7 @@
 	var outputs = [];
 	var outputDev = null;
 
-	function initMIDI()
+	function MIDIinit()
 	{
 		if (!log)
 		log = document.getElementById("log");
@@ -24,18 +24,18 @@
 			}
 		});
 		
-		navigator.requestMIDIAccess().then( access, failure );
+		navigator.requestMIDIAccess().then( MIDIaccessRequest, failure );
 	}
 
-	function access(midiAccess)
+	function MIDIaccessRequest(midiAccess)
 	{
 		clearInfo();
-		assignInputsAndOutputs(midiAccess);
-		setDefault();
+		MIDIassignIO(midiAccess);
+		MIDIsetDefault();
 
 		midiAccess.onstatechange = (event) => {
-			assignInputsAndOutputs(midiAccess);
-			setDefault();
+			MIDIassignIO(midiAccess);
+			MIDIsetDefault();
 		};
 		if(inputs.length + outputs.length == 0){
 			printInfo("No MIDI-Devices found");
@@ -43,12 +43,12 @@
 	}
 
 	// set first available device as default
-	function setDefault(){
+	function MIDIsetDefault(){
 		inputDev = null;
 		outputDev = null;
 		if(inputs.length > 0){
 			inputDev = inputs[0];
-			inputDev.onmidimessage = handleInputMessage;
+			inputDev.onmidimessage = MIDIhandleInputMessage;
 			printInfo(`${inputDev.state} ${inputDev.type}: ${inputDev.name}`);
 		}
 		if(outputs.length > 0){
@@ -62,7 +62,7 @@
 		printInfo(`Failed to get MIDI access - ${msg}`);
 	}
 
-	function assignInputsAndOutputs(midiAccess) {
+	function MIDIassignIO(midiAccess) {
 		if (typeof midiAccess.inputs === "function") {
 			inputs=midiAccess.inputs();
 			outputs=midiAccess.outputs();
@@ -81,15 +81,15 @@
 		}
 	}
 	
-	function sendShortMsg(midiMessage) {
+	function MIDIsendShortMsg(message) {
 		//omitting the timestamp means send immediately.
 		if(outputDev){
-			outputDev.send(midiMessage); 
+			outputDev.send(message); 
 		}
 	}
 
 	// handle received messaged
-	function handleInputMessage( event ) {
+	function MIDIhandleInputMessage( event ) {
 		if( event.data.length < 3)
 			return;
 

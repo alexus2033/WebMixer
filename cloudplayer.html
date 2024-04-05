@@ -70,9 +70,9 @@
   fileStore = [];
 
   window.onload = function(){
-	  initMIDI();
-    initPlayers();
-    readTitles(addListEntry);
+	  MIDIinit();
+    WSPlayersInit();
+    DBreadTitles(addListEntry);
   }
 
   fileList.ondblclick = loadSelectedEntry;
