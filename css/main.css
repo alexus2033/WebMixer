@@ -24,8 +24,14 @@ fieldset {
 }
 
 #fileList {
+    width: 100%;
     border-radius: 4px;
     border: 1px solid darkgray;
+}
+
+#cover {
+    max-width: 300px;
+    padding: 5px;
 }
 
 .played {
@@ -46,6 +52,7 @@ fieldset {
     top: 10pt;
     left: 30%;
     height: 90pt;
+    background: linear-gradient(to bottom, transparent 30%, #CF2F00);
 }
 
 #volume1,
