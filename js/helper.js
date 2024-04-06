@@ -269,9 +269,13 @@ async function addSomethingNew(type,something){
     } else {
         newUrl = AudiusExtractID(something);
     }
-    if(!newUrl) return false;
-    if(await DBreadTitle(newUrl)){
-        printInfo(newUrl + " already exists");
+    if(!newUrl){
+        printInfo("No valid Data found.");
+        return false;
+    }
+    const songInfo = await DBreadTitle(newUrl);
+    if(songInfo){
+        printInfo(songInfo.name + " already exists");
         return true;
     }
     if(type == "SC"){
@@ -325,11 +329,6 @@ function clearInfo(){
     }
 }
 
-function killTouch(){
-    document.addEventListener('touchstart', function(e) {e.preventDefault()}, false);
-    document.addEventListener('touchmove', function(e) {e.preventDefault()}, false);
-}
-
 // Convert milliseconds into Hours (h), Minutes (m), and Seconds (s)
 var timecode = function(ms) {
     var hms = function(ms) {
@@ -356,6 +355,23 @@ function htmlDecode(input){
     return doc.documentElement.textContent;
 }
 
+function HelpDisableScroll() {
+    document.body.style.overflow = 'hidden';  
+    // Get the current page scroll position
+    scrollTop = window.scrollY || document.documentElement.scrollTop;
+    scrollLeft = window.scrollX || document.documentElement.scrollLeft,
+    // if any scroll is attempted, set this to the previous value
+    window.onscroll = function () {
+        window.scrollTo(scrollLeft, scrollTop);
+    };
+}
+
+function HelpEnableScroll(){
+    document.body.style.overflow = 'visible';
+    // remove handler
+    window.onscroll = function () { };
+}
+
 function makeStruct(keys) {
     if (!keys) return null;
     const k = keys.split(', ');
@@ -379,7 +395,7 @@ function makeStruct(keys) {
         } catch (err) {
             printInfo(`${err.name}, ${err.message}`);
         }
-    }      
+    }     
 })().catch( console.error );
 
 // format number with leading zero

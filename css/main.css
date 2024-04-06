@@ -34,6 +34,15 @@ fieldset {
     padding: 5px;
 }
 
+.ui-icon-arrowthick-2-n-s {
+    position: absolute;
+    left: 98%;
+    top: 1;
+    padding: 1pt;
+    background-color: burlywood;
+    cursor: pointer;
+}
+
 .played {
     color: darkgray;
     background-color: cornsilk;

@@ -24,6 +24,7 @@
    </head>
    
    <body>
+      <span id="scrollSwitch" class="ui-icon ui-icon-arrowthick-2-n-s"></span>
       <table width="100%">
          <tr>
             <th width="47%">Deck 1</th>
@@ -194,6 +195,7 @@
    },false);
 
    window.onload = function(){
+      HelpDisableScroll();
       MIDIinit();
       DBinit().then(function() {
          DBcleanUpFiles();
@@ -202,6 +204,14 @@
       WSPlayersInit();
    }
   
+   //switch to handle scroll-events
+   $(".ui-icon-arrowthick-2-n-s").on("click", function(event, ui){
+      if(document.body.style.overflow == "hidden"){
+         HelpEnableScroll();
+      } else {
+         HelpDisableScroll();
+      }
+   });
    //draw volume-sliders
    $(".slider").slider({
       orientation: "vertical",
