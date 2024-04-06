@@ -78,10 +78,10 @@
     WSPlayersInit();
   }
 
-  fileList.ondblclick = loadSelectedEntry;
+  fileList.ondblclick = UIloadSelectedEntry;
   window.onbeforeunload = killPlayer;
 
-  function loadSelectedEntry(autoplay = false){
+  function UIloadSelectedEntry(autoplay = false){
     const selectedIdx = fileList.selectedIndex;
     if(selectedIdx < 0) return;
     var audioElement = fileList.options[selectedIdx].value;
@@ -124,10 +124,10 @@
 
     switch (event.key) {
       case "Enter":
-        loadSelectedEntry();
+        UIloadSelectedEntry();
       break;
       case " ": //Space-Key
-        var id = loadSelectedEntry(true);
+        var id = UIloadSelectedEntry(true);
       break;  
       case "Del":
       case "Delete":

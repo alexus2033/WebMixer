@@ -112,7 +112,7 @@
 		//select button
 		if(event.data[0] == 0x90 && event.data[2] == 0x40){
 			if(event.data[1] == 0x3a && fileList.selectedIndex >=0){
-				loadSelectedEntry();
+				UIloadSelectedEntry();
 			}
 			return;
 		}
@@ -132,12 +132,12 @@
 			if(event.data[1] == 0x20 || event.data[1] == 0x2a){
 				if(event.data[2] == 0x3f){ // go up
 					fileList.selectedIndex --;
-					listChanged();
+					UIlistChanged();
 				}
 				// go down
 				if(event.data[2] == 0x41 && fileList.selectedIndex+1 != fileList.options.length){
 					fileList.selectedIndex ++;
-					listChanged();
+					UIlistChanged();
 				}
 			}
 			if(event.data[1] == 0x21 || event.data[1] == 0x2b){
