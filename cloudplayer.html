@@ -71,8 +71,11 @@
 
   window.onload = function(){
 	  MIDIinit();
+    DBinit().then(function() {
+      DBcleanUpFiles();
+      DBreadTitles(UIaddListEntry,true);
+    });
     WSPlayersInit();
-    DBreadTitles(addListEntry);
   }
 
   fileList.ondblclick = loadSelectedEntry;
