@@ -183,9 +183,8 @@
          if(audioElement.startsWith('file')){
             var x = audioElement.substring(5);
             fileStore.splice(x-1, 1);
-         } else {
-            killTitle(audioElement);
          }
+         DBkillTitle(audioElement);
          fileList.remove(selectedIdx);
          break;
          default:
@@ -197,6 +196,7 @@
    window.onload = function(){
       MIDIinit();
       DBinit().then(function() {
+         DBcleanUpFiles();
          DBreadTitles(UIaddListEntry,true);
       });
       WSPlayersInit();
@@ -274,6 +274,7 @@
             if(item.type.startsWith("audio/") || item.type == "video/ogg"){
                 var x = fileStore.push(item);
                 UIaddListEntry(item.name,'file/' + x,true);
+                WSFileReadMetadata(item,'file/' + x,);
             }
         }
     }

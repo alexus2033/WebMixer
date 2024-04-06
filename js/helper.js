@@ -52,7 +52,7 @@ function DBkillTitle(songURL){
     var result = titleStore.delete(songURL);
     result.onerror = function(event){
         let request = event.target; 
-        printInfo("DB update failed: " + request.error);
+        printInfo("DB killTitle failed: " + request.error);
     }
 }
 
@@ -98,36 +98,25 @@ function DBinsertTitle(songURL,title,artist,cover,genre){
 }
 
 async function displayCover(audioURL){
-    img = document.getElementById("cover");
+    const img = document.getElementById("cover"),
+    songInfo = await DBreadTitle(audioURL);
+    if(typeof songInfo == "undefined" || !songInfo.coverArt){
+        img.src = "https://upload.wikimedia.org/wikipedia/commons/8/86/No_cover.png";
+        return;
+    }
     if(audioURL.startsWith('file/')){
-      var x = audioURL.substring(5);
-      window.jsmediatags.read(fileStore[x-1], {
-          onSuccess: function(tag) {
-            if(!tag.tags.picture){
-                img.src = "";
-                return;
-            }
-            const { data, format } = tag.tags.picture;
-            let base64String = "";
-            for (let i = 0; i < data.length; i++) {
-              base64String += String.fromCharCode(data[i]);
-            }
-            img.src = `data:${format};base64,${window.btoa(base64String)}`;
-          },
-          onError: function(error) {
-            img.src = "";
-          }
-        });
-    } else { //not startsWith('file')
-        const songInfo = await DBreadTitle(audioURL);
-        var cover = "";  
-        if(typeof songInfo !== "undefined" && songInfo.coverArt){
-            cover = songInfo.coverArt;
-            if(cover.endsWith("large.jpg")){
-                cover = cover.replace("large.jpg","t500x500.jpg");
-            } else if (cover.endsWith("large.png")){
-                cover = cover.replace("large.png","t500x500.png");
-            }
+        const { data, format } = songInfo.coverArt;
+        let base64String = "";
+        for (let i = 0; i < data.length; i++) {
+            base64String += String.fromCharCode(data[i]);
+        }
+        img.src = `data:${format};base64,${window.btoa(base64String)}`;
+    } else { //not startsWith('file')  
+        var cover = songInfo.coverArt;
+        if(cover.endsWith("large.jpg")){
+            cover = cover.replace("large.jpg","t500x500.jpg");
+        } else if (cover.endsWith("large.png")){
+            cover = cover.replace("large.png","t500x500.png");
         }
         img.src = cover;
     }
@@ -186,7 +175,8 @@ function exportCSV(){
         loadrequest = titleStore.getAll();
     loadrequest.onerror = event => reject(event.target.error);
     loadrequest.onsuccess = event => {
-        var data = event.target.result;
+        var alldata = event.target.result,
+            data = alldata.filter(item => !item.id.startsWith("file/"));
             data.forEach(row => {
                 fieldList.forEach(key => {
                     let value = (typeof row[key] !== "undefined" ? row[key] : "");
@@ -205,8 +195,20 @@ function displayCount(index){
     };
 }
 
+function DBcleanUpFiles(){
+    const titleStore = DBsetTransaction("readonly"),
+    index = titleStore.index("id"),
+    request = index.getAllKeys();
+    request.onsuccess = () => {
+        const data = request.result.filter(item => item.startsWith("file/"));
+        data.forEach(id => {
+            DBkillTitle(id);
+        });
+    };
+}
+
 function DBreadTitles(readCallback,displayCounter=false){
-    const titleStore = DBsetTransaction("readwrite"),
+    const titleStore = DBsetTransaction("readonly"),
           sorter = $("#sorter :checked").val();
     let order = "next";
     if(sorter == "added" || sorter == "played"){
@@ -286,12 +288,19 @@ async function addSomethingNew(type,something){
           AudiusSaveMetadata(track,meta);
     }
 
-    if(artist){
-        addListEntry(`${artist} - ${title}`,track,true); //title + artist, URL
-    } else {
-        addListEntry(title,track,true);
-    }
+    let label = createLabel(artist,title,"")
+    addListEntry(label,track,true);
     return true;
+}
+
+function createLabel(artist, title, filename){
+    if(artist && title){
+        return `${artist.trim()} - ${title}`
+    } else if(title) {
+        return title;
+    }
+    //remove extension
+    return filename.replace(/\.[^/.]+$/, "");
 }
 
 function updateListEntry(id, title){
@@ -303,7 +312,7 @@ function updateListEntry(id, title){
 
 function printInfo(value){
     if (typeof log === 'undefined' || log === null) {
-        console.log(value);
+        //console.log(value);
     } else {
         value += "\n";
         log.innerText += value;

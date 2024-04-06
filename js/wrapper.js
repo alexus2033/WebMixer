@@ -255,6 +255,8 @@ class Wrapper {
         this.#played = false;
         this.#playing = false;
         console.log("loading",this.id,this.url);
+        playerInfo[this.id].innerText = "";
+        extraInfo[this.id].innerText = "";
         if(mediaEntry.startsWith("file/")){
             var x = mediaEntry.substring(5);
             this.loadFile(fileStore[x-1], autoplay);
@@ -272,7 +274,6 @@ class Wrapper {
         this.displaySCPlayer(false);
         const src = URL.createObjectURL(file);
         this.player.load(src);
-        WSReadFileMetadata(this.id,file);
     }
 
     async loadAudius(trackURL){
@@ -287,8 +288,7 @@ class Wrapper {
             AudiusSaveMetadata(trackURL,meta);
             this.duration = meta.duration;
         } else {
-            playerInfo[this.id].innerText = songInfo.name;
-            extraInfo[this.id].innerText = songInfo.genre;
+            this.displaySongInfo();
         }
     }
 
@@ -308,6 +308,15 @@ class Wrapper {
         }, 999);                    
     }
 
+    async displaySongInfo(){
+        const meta = await DBreadTitle(this.url);
+        let label = createLabel(meta.artist, meta.name,"");
+        playerInfo[this.id].innerText = label;
+        if (typeof meta.genre !== 'undefined'){    
+            extraInfo[this.id].innerText = meta.genre;
+        }
+    }
+
     displaySCPlayer(showSC){
         if(showSC == true && !this.player.isDestroyed){
             this.player.stop();
@@ -323,8 +332,6 @@ class Wrapper {
             }
             this.player.setWaveColor(pOps.waveColor);
         }
-        playerInfo[this.id].innerText = "";
-        extraInfo[this.id].innerText = "";
     }
 
     play() {

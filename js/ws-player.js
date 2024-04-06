@@ -43,8 +43,10 @@
         player[id].on('audioprocess', function(e) { displayTime(id) });
         player[id].on('ready', function(e) {
             control[id].duration = player[id].getDuration();
+            control[id].displaySongInfo();
             displayTime(id);
-        player[id].playhead.setPlayheadTime(control[id].start); });
+            player[id].playhead.setPlayheadTime(control[id].start);
+        });
         player[id].on('play', function(e) { control[id].playing = true; });
         player[id].on('pause', function(e) { control[id].playing = false; });
         player[id].on('finish', function(e) {
@@ -55,20 +57,25 @@
         return player[id];
     }
 
-    function WSReadFileMetadata(id,file){
-        var info = file.name;
+    function WSFileReadMetadata(file,id){
         if(window.jsmediatags){
             window.jsmediatags.read(file, {
             onSuccess: function(result) {
-                if(result.tags.artist && result.tags.title){
-                    info=result.tags.artist + " - " + result.tags.title;
+                const meta = result.tags
+                DBinsertTitle(id, meta.title, meta.artist, meta.picture, meta.genre);
+                updateListEntry(id, meta.title);
+            },
+            onError: function(error) {
+                const zu = file.name.replace(/\.[^/.]+$/, ""),
+                      label = zu.split(" - ");
+                if(label.length == 1){
+                    DBinsertTitle(id,label[0],"");
+                } else {
+                    DBinsertTitle(id,label[0].trim(),label[1]);
                 }
-                playerInfo[id].innerText = info;
-                extraInfo[id].innerText = result.tags.genre ? result.tags.genre : "";
-            }
+              }
             });
         }
-        playerInfo[id].innerHTML = info;
     }
 
     // slow down or speed up playback
