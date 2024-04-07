@@ -39,13 +39,37 @@ fieldset {
     left: 98%;
     top: 1;
     padding: 1pt;
-    background-color: burlywood;
+    border-radius: 5px;
+    background-color: rgb(229, 201, 164);
     cursor: pointer;
+}
+
+.playing::before {
+    content: "\25BA\ ";
+}
+
+.new::after {
+    content: ' \1F5F2\ New \1F5F2';
+    color: red;
+    margin-left: 4px;
+}
+
+.local::after {
+    content: ' \1F4BE';
 }
 
 .played {
     color: darkgray;
     background-color: cornsilk;
+}
+
+.played::after {
+    content: " played ";
+    border-radius: 5px;
+    color: white;
+    background-color: darkgray;
+    margin-left: 5px;
+    padding: 1px 7px 1px 4px;
 }
 
 .eInfo {

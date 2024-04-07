@@ -356,6 +356,7 @@ function htmlDecode(input){
 }
 
 function HelpDisableScroll() {
+    window.scroll(0, 0);
     document.body.style.overflow = 'hidden';  
     // Get the current page scroll position
     scrollTop = window.scrollY || document.documentElement.scrollTop;

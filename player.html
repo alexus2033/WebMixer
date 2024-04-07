@@ -67,6 +67,9 @@
          <tr>
            <td colspan="3">
            <select id="fileList" Size="20" autofocus>
+         <!--
+           <option value="sunny">&#9733;&#9734;&#9734;&#9734; My sunny way home</option>
+         //-->
            </select>
            </td>
            <td width="20%"><img id="cover"></img></td>
@@ -268,6 +271,7 @@
          option.className = "played";
       }
       if(top){
+         option.className = "new";
          fileList.add(option,0);
          fileList.selectedIndex = 0;
          $('#fileList').scrollTop(0);
