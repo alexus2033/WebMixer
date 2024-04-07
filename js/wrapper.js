@@ -1,6 +1,6 @@
 const msgEOM = 0x3a;
 const playLED = 0x01;
-const playedSecs = 15;
+const playedSecs = 20;
 const startSecs = 4;
 
 function availableDeck(){
@@ -206,11 +206,18 @@ class Wrapper {
             return; //nothing changed
 
         this.#playing = newState;
+        const listEntry = $("#fileList option[value='"+ this.url +"']");
         if(newState == true){
+            if(listEntry){
+                listEntry.addClass("playing");
+            }
             this.finished = false;
             MIDIsendShortMsg([0x90,playLED+this.id,0x7f]);
             $(".playstop")[this.id].value = " Stop ";
         } else {
+            if(listEntry){
+                listEntry.removeClass("playing");
+            }
             MIDIsendShortMsg([0x90,playLED+this.id,0x01]);
             $(".playstop")[this.id].value = " Play ";
         }
