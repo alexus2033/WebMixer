@@ -120,6 +120,8 @@ async function displayCover(audioURL){
         }
         img.src = cover;
     }
+    $("#tagger #start").val("0:00");
+    $("#tagger #dura").val(timecode(songInfo.duration)); 
 }
 
 function importCSV(){
@@ -335,6 +337,7 @@ function clearInfo(){
 
 // Convert milliseconds into Hours (h), Minutes (m), and Seconds (s)
 var timecode = function(ms) {
+    if(!ms){ return "" }
     var hms = function(ms) {
           return {
             h: Math.floor(ms/(60*60*1000)),

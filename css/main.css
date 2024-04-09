@@ -53,6 +53,10 @@ fieldset {
     color: var(--playing-color);
 }
 
+.playing {
+    background-color: cornsilk;
+}
+
 .playing::after {
     content: " playing ";
     -moz-border-radius: 6px;
