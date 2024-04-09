@@ -63,7 +63,7 @@
             onSuccess: function(result) {
                 const meta = result.tags
                 DBinsertTitle(id, meta.title, meta.artist, meta.picture, meta.genre);
-                updateListEntry(id, meta.title);
+                updateListEntry(id, createLabel(meta.artist, meta.title));
             },
             onError: function(error) {
                 const zu = file.name.replace(/\.[^/.]+$/, ""),

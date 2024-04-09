@@ -1,3 +1,7 @@
+:root {
+    --playing-color: rgb(204, 54, 0);
+}
+
 body {
     font: 14px/1.4 Lucida Grande,Lucida Sans Unicode,Lucida Sans,Garuda,Verdana,Tahoma,sans-serif;
     background-color: #f5f5f5;
@@ -34,23 +38,35 @@ fieldset {
     padding: 5px;
 }
 
-.ui-icon-arrowthick-2-n-s {
+#scrollSwitch {
     position: absolute;
     left: 98%;
     top: 1;
     padding: 1pt;
     border-radius: 5px;
-    background-color: rgb(229, 201, 164);
+    background-color: lightgray;
     cursor: pointer;
 }
 
 .playing::before {
     content: "\25BA\ ";
+    color: var(--playing-color);
 }
 
-.new::after {
+.playing::after {
+    content: " playing ";
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-border-radius: 6px;
+    color: white;
+    background-color: var(--playing-color);
+    margin-left: 5px;
+    padding: 1px 7px 1px 4px;
+}
+
+.new:not(.playing)::after {
     content: ' \1F5F2\ New \1F5F2';
-    color: red;
+    color: var(--playing-color);
     margin-left: 4px;
 }
 
@@ -58,14 +74,16 @@ fieldset {
     content: ' \1F4BE';
 }
 
-.played {
+.played:not(.playing) {
     color: darkgray;
     background-color: cornsilk;
 }
 
-.played::after {
+.played:not(.playing)::after {
     content: " played ";
-    border-radius: 5px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-border-radius: 6px;
     color: white;
     background-color: darkgray;
     margin-left: 5px;
@@ -85,7 +103,7 @@ fieldset {
     top: 10pt;
     left: 30%;
     height: 90pt;
-    background: linear-gradient(to bottom, transparent 30%, #CF2F00);
+    background: linear-gradient(to bottom, transparent 30%, var(--playing-color));
 }
 
 #volume1,

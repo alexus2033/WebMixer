@@ -257,6 +257,10 @@ function DBreadTitles(readCallback,displayCounter=false){
     };
 }
 
+function readTags(){
+    document.styleSheets[0].insertRule(".hugo::after {content: ' hallo '; border-radius: 5px; color: white; background-color: green; margin-left: 5px; padding: 1px 7px 1px 4px;}",0);
+}
+
 // update volume slider & display
 function updateSlider(id,volume){
     $("#volume"+(id+1)).val(volume);

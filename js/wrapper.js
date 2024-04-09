@@ -163,14 +163,17 @@ class Wrapper {
             played: new Date().getTime()
         }
         DBupdateTitle(songInfo);
-        const listEntry = $("#fileList option[value='"+ this.url +"']");
-        if(listEntry){
-            listEntry.addClass("played");
+        if(this.listEntry){
+            this.listEntry.addClass("played");
         }
     }
 
     get markPlayed() {
         return this.#played;
+    }
+
+    get listEntry() {
+        return $("#fileList option[value='"+ this.url +"']");
     }
 
     /**

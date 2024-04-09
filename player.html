@@ -66,13 +66,22 @@
       <table>
          <tr>
            <td colspan="3">
-           <select id="fileList" Size="20" autofocus>
+           <select id="fileList" Size="20" style="height:100%" autofocus>
          <!--
            <option value="sunny">&#9733;&#9734;&#9734;&#9734; My sunny way home</option>
          //-->
            </select>
            </td>
-           <td width="20%"><img id="cover"></img></td>
+           <td width="20%">
+            <fieldset id="tagger">
+               <img id="cover"></img>
+               <!--
+               <nobr><label>Start: <input type="text" value="0:12" /></label></nobr>
+               <nobr><label>Duration: <input type="text" value="3:67" /></label></nobr>
+               <nobr><label>Tags: <input type="text" id="inputtags" value="dance" /></label></nobr>
+               //-->
+             </fieldset>
+            </td>
          </tr>
         <tr>
             <td>
@@ -267,17 +276,22 @@
       let option = document.createElement("option");
       option.text = title;
       option.value = url;
+      control.forEach(player => {
+         if(player.url == url && player.playing){
+            option.classList.add("playing");
+         }   
+      });
       if(played){
-         option.className = "played";
+         option.classList.add("played");
       }
       if(top){
-         option.className = "new";
+         option.classList.add("new");
          fileList.add(option,0);
          fileList.selectedIndex = 0;
          $('#fileList').scrollTop(0);
       } else {
          fileList.add(option);
-      }
+      } 
   }
 
   function UIscanFiles(items) {
