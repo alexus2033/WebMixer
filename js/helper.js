@@ -134,9 +134,9 @@ function importCSV(){
             if(data.length > 1){
                 DBinsertTitle(data[0],data[1],data[2],data[3],data[4]); //songURL,title,artist,cover,genre
                 if(data[2] && data[2]!=="null"){
-                    addListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
+                    UIaddListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
-                    addListEntry(data[1],data[0])
+                    UIaddListEntry(data[1],data[0])
                 }
             }
         });
@@ -299,7 +299,7 @@ async function addSomethingNew(type,something){
     }
 
     let label = createLabel(artist,title,"")
-    addListEntry(label,track,true);
+    UIaddListEntry(label,track,true);
     return true;
 }
 
