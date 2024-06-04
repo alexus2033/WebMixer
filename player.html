@@ -213,6 +213,10 @@
          DBreadTitles(UIaddListEntry,true);
       });
       WSPlayersInit();
+      HelpResizeList();
+      window.onresize = function(){
+         HelpResizeList();
+      };
    }
   
    //switch to handle scroll-events

@@ -70,7 +70,7 @@ function DBupdateTitle(entry){
     }
 }
 
-function DBinsertTitle(songURL,title,artist,cover,genre){
+function DBinsertTitle(songURL,title,artist,cover,genre,dateAdded){
     if (songURL) {
         if(songURL.startsWith("/")){
             songURL = songURL.substring(1);
@@ -79,13 +79,16 @@ function DBinsertTitle(songURL,title,artist,cover,genre){
             songURL = "SC/" + songURL.substring(7);
         }
     }
+    if(!$.isNumeric(dateAdded)){
+        dateAdded = new Date().getTime();
+    }
     const newItem = {
         id:songURL,
         name:title,
         artist:artist,
         genre:genre,
         coverArt:cover,
-        added:new Date().getTime()
+        added:dateAdded
     };
     const titleStore = DBsetTransaction("readwrite");
     var result = titleStore.add(newItem);
@@ -160,6 +163,12 @@ function exportOldCSV(){
     Save2File(content);
 }
 
+function storeSettings() {
+    $("#autobox input[type='checkbox']").forEach(cBox => {
+        localStorage.setItem('settings/'+cBox.id, cbox.checked);    
+    });
+}
+
 function Save2File(data) {
     const link = document.createElement("a"),
           file = new Blob([data], { type: 'text/csv' });
@@ -172,7 +181,7 @@ function Save2File(data) {
 // export data from indexedDB (new)
 function exportCSV(){
     const titleStore = DBsetTransaction("readonly"),
-          fieldList = ["id","name","artist","coverArt","genre"];
+          fieldList = ["id","name","artist","coverArt","genre","added"];
     let content = "",
         loadrequest = titleStore.getAll();
     loadrequest.onerror = event => reject(event.target.error);
@@ -378,6 +387,10 @@ function HelpEnableScroll(){
     document.body.style.overflow = 'visible';
     // remove handler
     window.onscroll = function () { };
+}
+
+function HelpResizeList(){
+    fileList.size = ($(window).height() - $('#fileList').offset().top) / 27
 }
 
 function makeStruct(keys) {
