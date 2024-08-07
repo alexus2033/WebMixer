@@ -19,7 +19,7 @@
         autoCenterImmediately: true,
         waveColor: greyGard,
         progressColor: '#ff5501',
-        barWidth: 3,
+        barWidth: 2,
         cursorColor : 'red',
         plugins: [ pHead ]
     };
@@ -61,18 +61,16 @@
         if(window.jsmediatags){
             window.jsmediatags.read(file, {
             onSuccess: function(result) {
-                const meta = result.tags
-                DBinsertTitle(id, meta.title, meta.artist, meta.picture, meta.genre);
+                const meta = result.tags,
+                      newTitle = new DBtitle([id, meta.title, meta.artist, meta.picture, meta.genre]);
+                newTitle.insert();
                 updateListEntry(id, createLabel(meta.artist, meta.title));
             },
-            onError: function(error) {
+            onError: function() {
                 const zu = file.name.replace(/\.[^/.]+$/, ""),
-                      label = zu.split(" - ");
-                if(label.length == 1){
-                    DBinsertTitle(id,label[0],"");
-                } else {
-                    DBinsertTitle(id,label[0].trim(),label[1]);
-                }
+                      label = zu.split(" - "),
+                      newTitle = new DBtitle(id,label[0],(label.length == 1) ? "" : label[1]);
+                newTitle.insert();
               }
             });
         }

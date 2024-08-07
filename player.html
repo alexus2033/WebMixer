@@ -2,6 +2,7 @@
 <html lang = "en">
    <head>
       <meta charset = "utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <title>Alphabeat Player</title>
       <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
       <link rel="stylesheet" href="css/main.css">
@@ -77,6 +78,7 @@
                <img id="cover"></img>
                <nobr><label>Start: <input type="text" value="0:00" id="start" /></label></nobr>
                <nobr><label>Duration: <input type="text" value="3:67" id="dura" /></label></nobr><!--
+               <nobr><label>Rating: <input type="text" value="&#9733;&#9734;&#9734;&#9734;" id="rate" /></label></nobr>
                <nobr><label>Tags: <input type="text" id="inputtags" value="dance" /></label></nobr>
                //-->
              </fieldset>
@@ -207,13 +209,13 @@
 
    window.onload = function(){
       HelpDisableScroll();
+      HelpResizeList();
       MIDIinit();
       DBinit().then(function() {
          DBcleanUpFiles();
          DBreadTitles(UIaddListEntry,true);
       });
       WSPlayersInit();
-      HelpResizeList();
       window.onresize = function(){
          HelpResizeList();
       };

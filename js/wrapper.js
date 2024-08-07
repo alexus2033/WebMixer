@@ -1,3 +1,5 @@
+"use strict"
+
 const msgEOM = 0x3a;
 const playLED = 0x01;
 const playedSecs = 20;
@@ -75,7 +77,7 @@ class Wrapper {
         this.#playing = false;
         this.#active = false;
         this.widget = null;
-        this.tme = new makeStruct("millis, sec, mins, hours");
+        this.tme = new HelpMakeStruct("millis, sec, mins, hours");
         this.#pos = new this.tme(0,0,0,0);
         this.#prev = new this.tme(0,0,0,0);
     }

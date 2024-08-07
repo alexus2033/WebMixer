@@ -20,7 +20,7 @@
         settings["auto_play"] = autoplay;       
         var ifrm = document.createElement("iframe");
         ifrm.setAttribute("src", SCcreateURL(trackURL,settings));
-        ifrm.setAttribute("allow","autoplay");
+        //ifrm.setAttribute("allow","autoplay");
         ifrm.setAttribute("frameborder","no");
         ifrm.setAttribute("id",`sc-player${id}`);
         ifrm.style.height = "140px";
@@ -77,10 +77,7 @@
     }
 
     function SCextractID(bigURL){
-        var SCid = bigURL.match(/\/tracks\/[0-9]+/i);
-        if(!SCid || SCid.length==0){
-            SCid = bigURL.match(/\/users\/[0-9]+/i);
-        }
+        var SCid = bigURL.match(/\/(tracks|users|playlists)\/[0-9]+/i);
         if(!SCid || SCid.length==0){
             return null;
         }

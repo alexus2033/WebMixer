@@ -6,11 +6,11 @@ function DBinit(){
         if(!indexedDB){
             return reject("IndexedDB not available");
         }
-        var request = indexedDB.open("alpha_idb",1);
+        var request = indexedDB.open("alpha_idb",2);
         request.onupgradeneeded = function(e){
             myDB = e.target.result;
             if(!myDB.objectStoreNames.contains("titles")){
-                var osTitles = myDB.createObjectStore("titles",{keyPath:"id"});
+                let osTitles = myDB.createObjectStore("titles",{keyPath:"id"});
                 osTitles.createIndex('id','id',{unique: true});
                 osTitles.createIndex('artist','artist',{unique: false});
                 osTitles.createIndex('genre','genre',{unique: false});
@@ -18,10 +18,26 @@ function DBinit(){
                 osTitles.createIndex('added','added',{unique: false});
                 osTitles.createIndex('played','played',{unique: false});
             }
+            if(!myDB.objectStoreNames.contains("playlists")){
+                let osPLists = myDB.createObjectStore("playlists",{keyPath:"id"});
+                osPLists.createIndex('id','id',{unique: true});
+                osPLists.createIndex('parent','parent',{unique: false});
+                osPLists.createIndex('name','name',{unique: false});
+                osPLists.createIndex('pos','pos',{unique: false});
+            }
+            if(!myDB.objectStoreNames.contains("playlistcontent")){
+                let osPListC = myDB.createObjectStore("playlistcontent");
+                osPListC.createIndex('plid','plid',{unique: false});
+                osPListC.createIndex('tid','tid',{unique: false});
+                osPListC.createIndex('pos','pos',{unique: false});
+                osPListC.createIndex('start','start',{unique: false});
+                osPListC.createIndex('end','end',{unique: false});
+            }
+            return resolve(myDB);
         }
-        request.onsuccess = function(){
-            myDB = request.result;
-            return resolve(request.result);
+        request.onsuccess = function(e){
+            myDB = e.target.result;
+            return resolve(myDB);
         }
         request.onerror = function(){
             return reject(request.error);
@@ -56,6 +72,23 @@ function DBkillTitle(songURL){
     }
 }
 
+function DBAdd2PList(title){
+    const newItem = {
+        plid:0,
+        tid:title,
+        pos:0
+    };
+    var trans = myDB.transaction(["playlistcontent"],"readwrite"),
+        playStore = trans.objectStore("playlistcontent"),
+        result = playStore.add(newItem);
+    result.onerror = function(event){
+        let info = (title ? title : songURL),
+            request = event.target;
+        console.log(request.error); 
+        printInfo("DB insert failed: " + info);
+    }
+}
+
 function DBupdateTitle(entry){
     const titleStore = DBsetTransaction("readwrite");
     var result = titleStore.get(entry.id);
@@ -70,33 +103,72 @@ function DBupdateTitle(entry){
     }
 }
 
-function DBinsertTitle(songURL,title,artist,cover,genre,dateAdded){
-    if (songURL) {
-        if(songURL.startsWith("/")){
-            songURL = songURL.substring(1);
+class DBtitle {
+
+    constructor(id, title) {
+        this.id = this.fixID(id);
+        this.name = title;
+        this.artist = "";
+        this.coverArt = "";
+        this.genre = "";
+        this.added = new Date().getTime();
+        this.duration = 0;
+        this.played = 0;
+        this.rating = 0;
+      	if(Array.isArray(id)){
+          for (const [x, value] of id.entries()) {
+              let prop = Object.keys(this)[x];
+              if(value){ //assign array to properties
+                this[prop]=value
+              }
+          }  
+        }    
+    }
+
+    fixID(inputVal){
+        if(Array.isArray(inputVal)){
+            inputVal[0] = this.fixID(inputVal[0]);
+            return;
         }
-        if (songURL.startsWith("tracks/")){ //update old metadata 
-            songURL = "SC/" + songURL.substring(7);
+        if(inputVal.startsWith("/")){
+            inputVal = inputVal.substring(1);
+        }
+        if (inputVal.startsWith("tracks/")){ //update old metadata 
+            inputVal = "SC/" + inputVal.substring(7);
+        }
+        return inputVal;
+    }
+
+    insert() {
+        const titleStore = DBsetTransaction("readwrite");
+        let info = (this.name ? this.name : this.id),
+        result = titleStore.add(this);
+        result.onerror = function(){
+            printInfo("DB insert failed: " + info);
         }
     }
-    if(!$.isNumeric(dateAdded)){
-        dateAdded = new Date().getTime();
+
+    update() {
+        const titleStore = DBsetTransaction("readwrite");
+        var result = titleStore.get(this.id);
+        result.onsuccess = function(event){
+            var record = event.target.result;
+            Object.assign(record, this); //merge entry into record
+            var result = titleStore.put(record);
+            result.onerror = function(event){
+                let request = event.target; 
+                printInfo("DB update failed: " + request.error);
+            }
+        }
     }
-    const newItem = {
-        id:songURL,
-        name:title,
-        artist:artist,
-        genre:genre,
-        coverArt:cover,
-        added:dateAdded
-    };
-    const titleStore = DBsetTransaction("readwrite");
-    var result = titleStore.add(newItem);
-    result.onerror = function(event){
-        let info = (title ? title : songURL),
-            request = event.target;
-        console.log(request.error); 
-        printInfo("DB insert failed: " + info);
+
+    kill() {
+        const titleStore = DBsetTransaction("readwrite");
+        var result = titleStore.delete(this.id);
+        result.onerror = function(event){
+            let request = event.target; 
+            printInfo("DB killTitle failed: " + request.error);
+        }
     }
 }
 
@@ -135,7 +207,8 @@ function importCSV(){
         lines.forEach(line => {
             const data = line.split(';');
             if(data.length > 1){
-                DBinsertTitle(data[0],data[1],data[2],data[3],data[4]); //songURL,title,artist,cover,genre
+                var newTitle = new DBtitle(data); //songURL,title,artist,cover,genre
+                newTitle.insert();
                 if(data[2] && data[2]!=="null"){
                     UIaddListEntry(`${data[2]} - ${data[1]}`,data[0]); //title + artist, URL
                 } else {
@@ -297,8 +370,9 @@ async function addSomethingNew(type,something){
         var meta = SCextractTitle(something),
             title = (meta.length>1 ? meta[1] : newUrl),
             artist = (meta.length>1 ? meta[0] : "")
-            track = newUrl.replace("tracks/","SC/");
-            DBinsertTitle(track,title,artist);
+            track = newUrl.replace("tracks/","SC/"),
+            newItem = new DBtitle([track, title, artist]);
+            newItem.insert();
     } else {
         var url = AudiusAddress + "/v1/" + newUrl,
           meta = await AudiusReadMetadata(url),
@@ -375,8 +449,8 @@ function HelpDisableScroll() {
     window.scroll(0, 0);
     document.body.style.overflow = 'hidden';  
     // Get the current page scroll position
-    scrollTop = window.scrollY || document.documentElement.scrollTop;
-    scrollLeft = window.scrollX || document.documentElement.scrollLeft,
+    let scrollTop = window.scrollY || document.documentElement.scrollTop;
+    let scrollLeft = window.scrollX || document.documentElement.scrollLeft
     // if any scroll is attempted, set this to the previous value
     window.onscroll = function () {
         window.scrollTo(scrollLeft, scrollTop);
@@ -390,10 +464,10 @@ function HelpEnableScroll(){
 }
 
 function HelpResizeList(){
-    fileList.size = ($(window).height() - $('#fileList').offset().top) / 27
+    fileList.size = ($(window).height() - $('#fileList').offset().top) / 26
 }
 
-function makeStruct(keys) {
+function HelpMakeStruct(keys) {
     if (!keys) return null;
     const k = keys.split(', ');
     const count = k.length;
@@ -409,9 +483,9 @@ function makeStruct(keys) {
     if ("wakeLock" in navigator) {
         let wakeLock = null;
         try {
-            navigator.wakeLock.request('screen').then(lock => { 
+            navigator.wakeLock.request('screen').then(result => {
                 console.log("Screenlock active."); 
-                screenLock = lock;
+                wakeLock = result;
             });
         } catch (err) {
             printInfo(`${err.name}, ${err.message}`);

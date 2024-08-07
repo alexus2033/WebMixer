@@ -30,11 +30,13 @@ async function AudiusReadMetadata(url){
 }
 
 function AudiusSaveMetadata(trackURL, meta){
-    var title = (meta ? meta.title : newUrl),
-    artist = (meta.user.name ? meta.user.name : ""),
-    artwork = (meta.artwork['480x480'] ? meta.artwork['480x480'] : ""),
-    genre = (meta.genre ? meta.genre : "");
-    insertTitle(trackURL,title,artist,artwork,genre);
+    let title = (meta ? meta.title : newUrl),
+        artist = (meta.user.name ? meta.user.name : ""),
+        artwork = (meta.artwork['480x480'] ? meta.artwork['480x480'] : ""),
+        newTitle = new DBtitle([trackURL, title, artist, artwork]);
+    newTitle.genre = (meta.genre ? meta.genre : "");
+    newTitle.duration = meta.duration*1000;
+    newTitle.insert();
 }
 
 function AudiusHandleError(response) {
