@@ -1,6 +1,5 @@
 "use strict"
 
-const msgEOM = 0x3a;
 const playLED = 0x01;
 const playedSecs = 20;
 const startSecs = 4;
@@ -50,6 +49,7 @@ function autoPlayer(id){
         } else if(control[nextDeck].playing == false){
             console.log("autoPlayer","PLAY!");
             control[nextDeck].play();
+            //MIDIsendMsg(id,'autoplay')
         }
     }
 }
@@ -77,7 +77,7 @@ class Wrapper {
         this.#playing = false;
         this.#active = false;
         this.widget = null;
-        this.tme = new HelpMakeStruct("millis, sec, mins, hours");
+        this.tme = new HelpMakeStruct("millis, sec, mins, hours, percent");
         this.#pos = new this.tme(0,0,0,0);
         this.#prev = new this.tme(0,0,0,0);
     }
@@ -116,19 +116,28 @@ class Wrapper {
         this.#remain = this.duration - newValue;
         this.#pos.mins = parseInt((this.#remain/60)%60);
         this.#pos.secs = parseInt(this.#remain%60);
-        this.#pos.millis = newValue.toFixed(2).slice(-2,-1);
-        
+        //this.#pos.millis = newValue.toFixed(2).slice(-2,-1);
+        this.#pos.millis = Math.floor((this.#remain - Math.floor(this.#remain)) * 100);
+        this.#pos.Percent = Math.round(newValue/this.duration*100);
+
+        const adr = midiMSG.time + this.id;
+
         if(this.finished){
-            posDisplay[this.id].innerHTML = "0:00.0";
-            MIDIsendShortMsg([0x94+this.id, 0x16, 0]);
+            //posDisplay[this.id].innerHTML = "0:00.0";
+            posDisplay[this.id].innerHTML = "0:00.00";
+            MIDIsendShortMsg([adr, midiMSG.mills, 0]);
             return; //skip display update
         }
+        if(this.#prev.percent != this.#pos.Percent){
+            MIDIsendShortMsg([adr, midiMSG.percent, this.#pos.Percent]);
+            this.#prev.percent = this.#pos.Percent; 
+        }
         if(this.#prev.mins != this.#pos.mins){
-            MIDIsendShortMsg([0x94+this.id, 0x14, this.#pos.mins]);
+            MIDIsendShortMsg([adr, midiMSG.mins, this.#pos.mins]);
             this.#prev.mins = this.#pos.mins
         }
         if(this.#prev.secs != this.#pos.secs){
-            MIDIsendShortMsg([0x94+this.id, 0x15, this.#pos.secs]);
+            MIDIsendShortMsg([adr, midiMSG.secs, this.#pos.secs]);
             this.#prev.secs = this.#pos.secs;
             if(this.#remain > 0 && this.#remain < startSecs){
                 autoPlayer(this.id);
@@ -138,10 +147,10 @@ class Wrapper {
             }
         }
         if(this.#prev.millis != this.#pos.millis){
-            MIDIsendShortMsg([0x94+this.id, 0x16, this.#pos.millis]);
+            MIDIsendShortMsg([adr, midiMSG.mills, this.#pos.millis]);
             this.#prev.millis = this.#pos.millis;
             //update Time Display
-            posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis}`;
+            posDisplay[this.id].innerHTML = `-${this.#pos.mins}:${this.#pos.secs.pad(2)}.${this.#pos.millis.pad(2)}`;
         }
         if(this.playing && this.#remain < 21 && this.#remain > 0 && this.EOM == false){
             this.EOM = true; //start blinker
@@ -187,12 +196,12 @@ class Wrapper {
             
         this.#eom = newState;
         if(newState == true){
-            MIDIsendShortMsg([0x90,msgEOM+this.id,0x7f]);
+            MIDIsendShortMsg([0x90,midiMSG.EOM+this.id,0x7f]);
             if(this.widget && this.url.startsWith("users/")){
                 SCgetPlaylist(this.widget,this.id); //reload playlist
             }
         } else {
-            MIDIsendShortMsg([0x90,msgEOM+this.id,0x01]);
+            MIDIsendShortMsg([0x90,midiMSG.EOM+this.id,0x01]);
         }
     }
 
@@ -217,12 +226,15 @@ class Wrapper {
                 listEntry.addClass("playing");
             }
             this.finished = false;
+            DenonSetLED(this.id+1, 'param', 1);	/* parameter knob */
+            DenonSetLED(this.id+1, 'play', 1);
             MIDIsendShortMsg([0x90,playLED+this.id,0x7f]);
             $(".playstop")[this.id].value = " Stop ";
         } else {
             if(listEntry){
                 listEntry.removeClass("playing");
             }
+            DenonSetLED(this.id+1, 'play', 0);
             MIDIsendShortMsg([0x90,playLED+this.id,0x01]);
             $(".playstop")[this.id].value = " Play ";
         }
@@ -312,10 +324,15 @@ class Wrapper {
             this.widget.load(trackURL,settings);
         }
         setTimeout(() => {
-            this.widget.getDuration((x) => {
+            this.widget.getCurrentSound((x) => {
                 this.#prev = new this.tme(-1,-1,-1,0); //force disp update
-                this.duration = x/1000;
+                this.duration = x.duration/1000;
                 this.position = 0;
+                console.log(x);
+                let meta = x.publisher_metadata,
+                    artist = meta.artist ? meta.artist : x.artist,
+                    title = meta.release_title ? meta.release_title : x.title;
+                DenonDisplay(this.id+1 ,artist ,title);
             });
         }, 999);                    
     }

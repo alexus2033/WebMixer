@@ -388,9 +388,9 @@ async function addSomethingNew(type,something){
 
 function createLabel(artist, title, filename){
     if(artist && title){
-        return `${artist.trim()} - ${title}`
+        return `${artist.compress()} - ${title.compress()}`
     } else if(title) {
-        return title;
+        return title.compress();
     }
     //remove extension
     return filename.replace(/\.[^/.]+$/, "");
@@ -498,4 +498,22 @@ Number.prototype.pad = function(size) {
     var s = String(this);
     while (s.length < (size || 2)) {s = "0" + s;}
     return s;
+}
+
+// returns an ASCII byte array for the string
+String.prototype.toInt = function() {
+    const a = [];
+    for (let i = 0; i < this.length; i++) {
+        a[i] = this.charCodeAt(i);
+    }
+    return a;
+};
+
+String.prototype.compress = function() {
+    let x = this.replace("  "," ");
+    x = x.replace(" - ","-");
+    x = x.replace(" + ","+");
+    x = x.replace(" & ","&");
+    x = x.replace(". ",".");
+    return x.trim();
 }
